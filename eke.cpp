@@ -26,6 +26,38 @@ using namespace ranlib;
 int main()
 {
 
+#if 0
+  //cout << fixed << setprecision(20);
+
+  //Input (in future via python)
+  int nx,ny,nz;
+  double lx,ly,lz;
+  double rs;
+  double charge;
+  nx=32;
+  ny=nx;
+  nz=ny;
+  lx=10.;
+  ly=10.;
+  lz=10.;
+  rs=1.;
+  charge=1.;
+
+  
+  GeometryObject<block>();
+  
+
+  Geometry geometry();
+
+
+  Grid grid(n1,n2,n3,geometry);
+
+  
+#endif
+
+
+
+
   //cout << fixed << setprecision(20);
 
   //Input (in future via python)
