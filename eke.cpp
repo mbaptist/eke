@@ -57,8 +57,7 @@ int main()
 
 
 
-
-  //cout << fixed << setprecision(20);
+//cout << fixed << setprecision(20);
 
   //Input (in future via python)
   int nx,ny,nz;
