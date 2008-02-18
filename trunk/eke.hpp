@@ -23,7 +23,7 @@ void initialise_colloid(Array<double,3> & charge_density,
 
 
 void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
-			       const Array<double,3> & charge_density,
+              const Array<double,3> & charge_density,
 			       const Array<int,3> & point_type,
 			       const int & nx, const int & ny,const int & nz,
 			       const double & lx, const double & ly,const double & lz);  
