@@ -1,18 +1,37 @@
 
-
-
-
 class Grid
 {
-private:
   
-  Array<TinyVector<double,3>,3> coordinates(nx,ny,nz);
-  Array<int,3> point_type(nx,ny,nz);
+private:
+  //Members
+  int nx_,ny_,nz_;
+  double lx_,ly_,lz_,rs_;
+  Array<TinyVector<double,3>,3> coordinates_;
+  Array<int,3> point_type_;
 
 public:
-  Grid(nx,ny,nz,lx,ly,lz,rs,geom)
-
-
+  //Accessors
+  int & nx(){return & nx_;};
+  int & ny(){return & ny_;};
+  int & nz(){return & nz_;};
+  int & lx(){return & lx_;};
+  int & ly(){return & ly_;};
+  int & lz(){return & lz_;};
+  int & rs(){return & rs_;};
+  Array<TinyVector<double,3>,3> & coordinates(){return & coordinates_;};
+  Array<TinyVector<double,3>,3> & point_type(){return & point_type_;};
+  
+public:
+  //Ctors
+  Grid(const int & _nx_, const int & _ny_,const int & _nz_,
+       const double & _lx_, const double & _ly_,const double & _lz_,
+       const double & _rs_);
+  //Dtor
+  ~Grid();
+  
+private:
+  //Forbidden Ctors
+  Grid();
 
 };
 

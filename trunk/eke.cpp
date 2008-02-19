@@ -26,8 +26,7 @@ using namespace ranlib;
 int main()
 {
 
-#if 0
-  //cout << fixed << setprecision(20);
+  cout << fixed << setprecision(20);
 
   //Input (in future via python)
   int nx,ny,nz;
@@ -44,48 +43,14 @@ int main()
   charge=1.;
 
   
-  GeometryObject<block>();
-  
+ //Grid
+  Grid grid(nx,ny,nz,lx,ly,lz,rs);
 
-  Geometry geometry();
-
-
-  Grid grid(n1,n2,n3,geometry);
-
-  
-#endif
-
-
-
-//cout << fixed << setprecision(20);
-
-  //Input (in future via python)
-  int nx,ny,nz;
-  double lx,ly,lz;
-  double rs;
-  double charge;
-  nx=32;
-  ny=nx;
-  nz=ny;
-  lx=10.;
-  ly=10.;
-  lz=10.;
-  rs=1.;
-  charge=1.;
-
-  //Grid
-  //Coordinates of grid points
-  Array<TinyVector<double,3>,3> coordinates(nx,ny,nz);
-  //Classification of grid points
-  Array<int,3> point_type(nx,ny,nz);
-  //Initialise the arrays above
-  initialise_grid(coordinates,point_type,nx,ny,nz,lx,ly,lz,rs);
 
   //Charge density
   Array<double,3> charge_density(nx,ny,nz);
   //Distribute the charges over the surface of the colloid
-  initialise_colloid(charge_density,point_type,coordinates,
-		     nx,ny,nz,lx,ly,lz,rs,charge);
+  initialise_colloid(charge_density,grid,nx,ny,nz,lx,ly,lz,rs,charge);
   
 
   ofstream ofs("chd.dat");
