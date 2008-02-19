@@ -3,4 +3,5 @@ Makefile
 eke.cpp
 eke.hpp
 geometry.hpp
+grid.cpp
 grid.hpp
