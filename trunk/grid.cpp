@@ -1,6 +1,13 @@
 
 #include "grid.hpp"
 
+#include <blitz/blitz.h>
+#include <blitz/array.h>
+#include <blitz/tiny.h>
+#include <blitz/tinyvec.h>
+using namespace blitz;
+
+
 //Ctor
 Grid::Grid(const int & _nx_, const int & _ny_,const int & _nz_,
            const double & _lx_, const double & _ly_,const double & _lz_,
@@ -15,7 +22,7 @@ point_type_(nx_,ny_,nz_)
     for(int j=0;j<ny_;++j)
       for(int k=0;k<nz_;++k)
       {
-        coordinates(i,j,k)=TinyVector<double,3>(-.5*lx_+i*lx_/nx_,
+        coordinates_(i,j,k)=TinyVector<double,3>(-.5*lx_+i*lx_/nx_,
                                                 -.5*ly_+j*ly_/ny_,
                                                 -.5*lz_+k*lz_/nz_);
         if (norm(coordinates_(i,j,k))>=2*rs_)
@@ -28,6 +35,7 @@ point_type_(nx_,ny_,nz_)
 }
 
 //Dtor
-Grid::Grid()
+Grid::~Grid()
 {
 }
+
