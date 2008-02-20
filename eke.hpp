@@ -9,30 +9,22 @@ using namespace blitz;
 
 #include "grid.hpp"
 
-void initialise_colloid(Array<double,3> & charge_density, const Grid & grid, const double & charge);
-
+void initialise_colloid(Array<double,3> & charges, 
+                        Grid & grid,
+                        const double & total_charge);
 
 void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
-                              const Array<double,3> & charge_density,
-			      const Array<int,3> & point_type,
-			      const int & nx, const int & ny,const int & nz,
-			      const double & lx, const double & ly,const double & lz);  
+                               const Array<double,3> & charges,
+                               const Grid & grid);  
 
+double functional(Array<TinyVector<double,3>,3> & electric_field);
 
-double random_loop_move(Array<TinyVector<double,3>,3> & electric_field,
-		const int & nx,const int & ny,const int & nz,
-		const double & lx, const double & ly,const double & lz);
+void loop_move(Array<TinyVector<double,3>,3> & electric_field,
+               const Grid & grid,
+               const Loop & loop);
 
-double sequential_loop_move(Array<TinyVector<double,3>,3> & electric_field,
-		const int & nx,const int & ny,const int & nz,
-			    const double & lx,const double & ly,const double & lz);
-
-
-double try_move(Array<TinyVector<double,3>,3> & electric_field,
-		const int & nx,const int & ny,const int & nz,
-		const int & ni,const int & nj,const int & nk,
-		const int & plaquete);
-
-
-
+void sequential_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
+                            const Grid & grid);
+void random_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
+                            const Grid & grid);
 

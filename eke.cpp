@@ -23,6 +23,9 @@ using namespace ranlib;
 
 #include "eke.hpp"
 
+
+///////////////////////////////////////////
+
 int main()
 {
 
@@ -32,7 +35,7 @@ int main()
   int nx,ny,nz;
   double lx,ly,lz;
   double rs;
-  double charge;
+  double total_charge;
   nx=32;
   ny=nx;
   nz=ny;
@@ -40,49 +43,28 @@ int main()
   ly=10.;
   lz=10.;
   rs=1.;
-  charge=1.;
+  total_charge=1.;
 
-  
- //Grid
+   //Grid
   Grid grid(nx,ny,nz,lx,ly,lz,rs);
 
-
-  //Charge density
-  Array<double,3> charge_density(nx,ny,nz);
+  //Charges
+  Array<double,3> charges(nx,ny,nz);
   //Distribute the charges over the surface of the colloid
-  initialise_colloid(charge_density,grid,nx,ny,nz,lx,ly,lz,rs,charge);
+  initialise_colloid(charges,grid,total_charge);
   
-
-  ofstream ofs("chd.dat");
+  //Save charges
+  ofstream ofs("charges.dat");
   //ofs << charge_density << endl;
-  for (int n=0;n<charge_density.size();++n)
-    ofs << charge_density.data()[n] << endl;
- 
-  //cout << charge_density << endl;
-
-
+  for (int n=0;n<charges.size();++n)
+    ofs << charges.data()[n] << endl;
+   //cout << charge_density << endl;
 
   //electric field
   Array<TinyVector<double,3>,3> electric_field(nx,ny,nz);
+  initialise_electric_field(electric_field,charges,grid);
 
-#if 0
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      for(int k=0;k<nz;++k)
-	if(point_type(i,j,k)==3||point_type(i,j,k)==2||point_type(i,j,k)==3)
-	  {
-	    electric_field(i,j,k)=coordinates(i,j,k);
-	    electric_field(i,j,k)*=.25/M_PI*charge/pow(norm(coordinates(i,j,k)),3);
-	  }
-	else
-	  electric_field(i,j,k)=TinyVector<double,3>(0,0,0);
-#endif
-
-
-  initialise_electric_field(electric_field,charge_density,point_type,nx,ny,nz,lx,ly,lz);
-
-
-
+  //Save initial electric field
   ofstream ofs2("efi.dat");
   //ofs2 << electric_field << endl;
   for (int n=0;n<electric_field.size();++n)
@@ -93,36 +75,23 @@ int main()
     }
 
   //minimise
-  int npm=0;
-  double delta_functional=1;
-  double func0=.5*sum(dot(electric_field,electric_field));
+  int num_steps=0;
+  double func0=functional(electric_field);
   while(1)
     {
-      ++npm;
-      //cout << ++npm << endl;
-#if 0
-      for (int nn=0;nn<300*(nx*ny*nz);++nn)
-	{
-	  delta_functional=0;
-	  delta_functional+=loop_move(electric_field,nx,ny,nz,lx,ly,lz);
-	  //delta_functional+=charge_move(electric_field,charge_density);
-	}
-#endif
-      delta_functional=0;
-      delta_functional+=sequential_loop_move(electric_field,nx,ny,nz,lx,ly,lz);
-      
-
-      double func=.5*sum(dot(electric_field,electric_field));
-      cout << "F=" << func << endl;
-      delta_functional=func-func0;
+      ++num_steps;
+      cout << "Minimisation step " << num_steps << endl;
+      sequential_sweep_loop_moves(electric_field,grid);
+      double func=functional(electric_field);      
+      double delta_func=func-func0;
+      cout << "Functional before // Functional after // Variation" << endl;
+      cout <<  func0 << " // " << func << " // " << delta_func << endl << endl;
+      if((delta_func<=0)&&(-delta_func<1e-16))
+        break;
       func0=func;
-      cout << "DF=" << delta_functional << endl;
-      if(delta_functional<0)
-	cout << npm << endl;
-      if((delta_functional<=0)&&(-delta_functional<1e-20))
-	break;
     }
   
+  //write electric field after minimisation  
   ofstream ofs3("ef.dat");
   ofs3 << fixed << setprecision(20);
   //ofs3 << electric_field << endl;
@@ -138,12 +107,12 @@ int main()
   for(int i=0;i<nx;++i)
     for(int j=0;j<ny;++j)
       for(int k=0;k<nz;++k)
-	if(point_type(i,j,k)==3)
+        if(grid.point_type()(i,j,k)==3)
 	  {
 	    //cout << "EF: " << electric_field(i,j,k) << endl;
 	    //cout << "TT" << endl;
-	    ef_test(i,j,k)=coordinates(i,j,k);
-	    ef_test(i,j,k)*=.25/M_PI*charge/pow(norm(coordinates(i,j,k)),3);
+          ef_test(i,j,k)=grid.coordinates()(i,j,k);
+          ef_test(i,j,k)*=.25/M_PI*total_charge/pow(norm(grid.coordinates()(i,j,k)),3);
 	    ef_test(i,j,k)-=electric_field(i,j,k);
 	    ef_test(i,j,k)/=norm(electric_field(i,j,k));
 	    //cout << "EFT: " << ef_test(i,j,k) << endl;
@@ -158,76 +127,60 @@ int main()
   return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
 
-
-void initialise_grid(Array<TinyVector<double,3>,3> & coordinates,
-		     Array<int,3> & point_type,
-		     const int & nx, const int & ny,const int & nz,
-		     const double & lx, const double & ly,const double & lz,
-		     const double & rs)
+void initialise_colloid(Array<double,3> & charges,
+                        Grid & grid,
+                        const double & total_charge)
 {
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      for(int k=0;k<nz;++k)
-	{
-	  coordinates(i,j,k)=TinyVector<double,3>(-.5*lx+i*lx/nx,
-						  -.5*ly+j*ly/ny,-
-						  .5*lz+k*lz/nz);
-	  if (norm(coordinates(i,j,k))>=2*rs)
-	    point_type(i,j,k)=1;
-	  else if ((norm(coordinates(i,j,k))<2*rs)&&(norm(coordinates(i,j,k))>=rs))
-	    point_type(i,j,k)=3;
-	  else
-	    point_type(i,j,k)=5;
-	}
-}
- 
-
-void initialise_colloid(Array<double,3> & charge_density,
-			Array<int,3> & point_type,
-			const Array<TinyVector<double,3>,3> & coordinates,
-			const int & nx, const int & ny,const int & nz,
-			const double & lx, const double & ly,const double & lz,
-			const double & rs,const double & charge)
-{
-  charge_density=0;
-  int np=10000;
-  double delta_charge=charge/np;
+  int nx(grid.nx());
+  int ny(grid.ny());
+  int nz(grid.nz());
+  double lx(grid.lx());
+  double ly(grid.ly());
+  double lz(grid.lz());
+  double rs(grid.rs());
+  const blitz::Array<blitz::TinyVector<double,3>,3> & coordinates(grid.coordinates());
+  blitz::Array<int,3> & point_type(grid.point_type());
+  charges=0;
+  int np=100000;
+  double delta_charge=total_charge/np;
   UniformClosed<double> rg;
+  //Distribute charges on the central sphere
   for(int n=0;n<np;++n)
-    {
-      double theta=rg.random()*M_PI;
-      double phi=rg.random()*2.*M_PI;
-      TinyVector<double,3> coord_ps(rs*cos(phi)*sin(theta),
-				    rs*sin(phi)*sin(theta),
-				    rs*cos(theta));
-      int ind_lip_x=static_cast<int>((coord_ps[0]+.5*lx)/(lx/nx));
-      int ind_lip_y=static_cast<int>((coord_ps[1]+.5*ly)/(ly/ny));
-      int ind_lip_z=static_cast<int>((coord_ps[2]+.5*lz)/(lz/nz));
-      TinyVector<double,3> dist_vec=coord_ps;
-      dist_vec-=coordinates(ind_lip_x,ind_lip_y,ind_lip_z);
-      double distance0=norm(dist_vec);
-      int ind_np_x=ind_lip_x;
-      int ind_np_y=ind_lip_y;
-      int ind_np_z=ind_lip_z;
-      for(int i=0;i<2;++i)
-	for(int j=0;j<2;++j)
-	  for(int k=0;k<2;++k)
-	    {
-	      dist_vec=coord_ps;
-	      dist_vec-=coordinates(ind_lip_x+i,ind_lip_y+j,ind_lip_z+k);
-	      double distance=norm(dist_vec); 
-	      if(distance<distance0)
-		{
-		  ind_np_x=ind_lip_x+i;
-		  ind_np_y=ind_lip_y+j;
-		  ind_np_z=ind_lip_z+k;
-		  distance0=distance;
-		}
-	    }
-      charge_density(ind_np_x,ind_np_y,ind_np_z)+=delta_charge;
-      point_type(ind_np_x,ind_np_y,ind_np_z)=4;     
-    }
+  {
+    double theta=rg.random()*M_PI;
+    double phi=rg.random()*2.*M_PI;
+    TinyVector<double,3> coord_ps(rs*cos(phi)*sin(theta),
+                                  rs*sin(phi)*sin(theta),
+                                  rs*cos(theta));
+    int ind_lip_x=static_cast<int>((coord_ps[0]+.5*lx)/(lx/nx));
+    int ind_lip_y=static_cast<int>((coord_ps[1]+.5*ly)/(ly/ny));
+    int ind_lip_z=static_cast<int>((coord_ps[2]+.5*lz)/(lz/nz));
+    TinyVector<double,3> dist_vec=coord_ps;
+    dist_vec-=coordinates(ind_lip_x,ind_lip_y,ind_lip_z);
+    double distance0=norm(dist_vec);
+    int ind_np_x=ind_lip_x;
+    int ind_np_y=ind_lip_y;
+    int ind_np_z=ind_lip_z;
+    for(int i=0;i<2;++i)
+      for(int j=0;j<2;++j)
+        for(int k=0;k<2;++k)
+        {
+          dist_vec=coord_ps;
+          dist_vec-=coordinates(ind_lip_x+i,ind_lip_y+j,ind_lip_z+k);
+          double distance=norm(dist_vec); 
+          if(distance<distance0)
+          {
+            ind_np_x=ind_lip_x+i;
+            ind_np_y=ind_lip_y+j;
+            ind_np_z=ind_lip_z+k;
+            distance0=distance;
+          }
+        }
+    charges(ind_np_x,ind_np_y,ind_np_z)+=delta_charge;
+    point_type(ind_np_x,ind_np_y,ind_np_z)=4;     
+  }
   
   //Put negative charges at the outer sphere
   for(int n=0;n<np;++n)
@@ -262,30 +215,23 @@ void initialise_colloid(Array<double,3> & charge_density,
 		}
 	    }
 
-      charge_density(ind_np_x,ind_np_y,ind_np_z)+=-delta_charge;
+      charges(ind_np_x,ind_np_y,ind_np_z)+=-delta_charge;
       point_type(ind_np_x,ind_np_y,ind_np_z)=2;     
     }     
       
 
 }
 
-
 void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
-			       const Array<double,3> & charge_density,
-			       const Array<int,3> & point_type,
-			       const int & nx, const int & ny,const int & nz,
-			       const double & lx, const double & ly,const double & lz)
+                               const Array<double,3> & charges,
+                               const Grid & grid)
 {
-
-
-#if 1
-
+  int nx(grid.nx());
+  int ny(grid.ny());
+  int nz(grid.nz());
   electric_field=TinyVector<double,3>(0,0,0);
-
-  Array<double,3> charge(charge_density.copy());
-
+  Array<double,3> charge(charges.copy());
   double mean_charge;
-
   //Ex
   mean_charge=mean(charge(0,Range::all(),Range::all()));
   charge(0,Range::all(),Range::all())-=mean_charge;
@@ -306,8 +252,6 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
   for(int j=0;j<ny;++j)
     for(int k=0;k<nz;++k)
       electric_field[0](nx-1,j,k)=0.;
-
-
   //Ey
   for(int i=0;i<nx;++i)
     {
@@ -328,7 +272,6 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
       for(int k=0;k<nz;++k)
 	electric_field[1](i,ny-1,k)=0.;
     }
-  
   //Ez
   for(int i=0;i<nx;++i)
     for(int j=0;j<ny;++j)
@@ -338,8 +281,6 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
 	  electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+charge(i,j,k);
 	electric_field[2](i,j,nz-1)=0;
       }
-
-#endif
 
   cout << "Mean: " << mean(electric_field[0]) << endl;
   cout << "Mean: " << mean(electric_field[1]) << endl;
@@ -378,11 +319,11 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
 	  n2=k;
 	  double divz=electric_field[2](i,j,n2)-electric_field[2](i,j,n1);
 	  double div=divx+divy+divz;
-	  if (fabs(div-charge_density(i,j,k))>.5e-16)
+	  if (fabs(div-charges(i,j,k))>.5e-16)
 	    {
 	      cout << i << " " << j << " " << k << " " 
 		   << divx << " " << divy <<" " << divz << " " 
-		   << div << " " << charge_density(i,j,k) << endl;
+		   << div << " " << charges(i,j,k) << endl;
 	      exit(1);
 	    }
 	}
@@ -390,85 +331,20 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
 
 }
 
-double random_loop_move(Array<TinyVector<double,3>,3> & electric_field,
-		 const int & nx,const int & ny,const int & nz,
-		 const double & lx,const double & ly,const double & lz)
+double functional(Array<TinyVector<double,3>,3> & electric_field)
 {
-  //Choose a node
-  DiscreteUniform<int> rgx(nx);
-  DiscreteUniform<int> rgy(ny);
-  DiscreteUniform<int> rgz(nz);
-  int ni = rgx.random();
-  int nj = rgy.random();
-  int nk = rgz.random();
-  //cout << "Node: " << ni << " " << nj << " " << nk << endl;
-  //Choose a plaquete
-  DiscreteUniform<int> rgp(3);
-  int plaquete=rgp.random();
-  //cout << "Plaquete: " << plaquete << endl;
-  return try_move(electric_field,nx,ny,nz,ni,nj,nk,plaquete);
+  return double(.5*sum(dot(electric_field,electric_field)));
 }
 
-
-double try_move(Array<TinyVector<double,3>,3> & electric_field,
-		const int & nx,const int & ny,const int & nz,
-		const int & ni,const int & nj,const int & nk,
-		const int & plaquete)
+void loop_move(Array<TinyVector<double,3>,3> & electric_field,
+               const Grid & grid,
+               const Loop & loop)
 {
-  int pn1i=ni,pn1j=nj,pn1k=nk;
-  int pn2i=ni,pn2j=nj,pn2k=nk;
-  int pn3i=ni,pn3j=nj,pn3k=nk;
-  int pn4i=ni,pn4j=nj,pn4k=nk;
-  int dir1,dir2;
-  if (plaquete==0)
-    {
-      if(nj<ny-1)
-	pn2j=nj+1;
-      else
-	pn2j=0;
-      if(ni<nx-1)
-	pn3i=ni+1;
-      else
-	pn3i=0;
-      dir1=1;
-      dir2=0;
-    }
-  else if (plaquete==1)
-    {
-       if(nk<nz-1)
-	 pn2k=nk+1;
-       else
-	 pn2k=0;
-       if(nj<ny-1)
-	 pn3j=nj+1;
-       else
-	 pn3j=0;
-      dir1=2;
-      dir2=1;
-    }
-  else if (plaquete==2)
-    {
-       if(nk<nz-1)
-	 pn2k=nk+1;
-       else
-	 pn2k=0;
-       if(ni<nx-1)
-	 pn3i=ni+1;
-       else
-	 pn3i=0;
-      dir1=2;
-      dir2=0;
-    }	
-  //Change in the field
-  //UniformClosed<double> rgdf;
-  //double mdf=.1;
-  //double delta_field=mdf*(-1.+2.*rgdf.random());
-  //cout << "Dfield=" << delta_field << endl;
-  //Evaluate the trial field
-  double & e1 = electric_field(pn1i,pn1j,pn1k)[dir1];
-  double & e2 = electric_field(pn2i,pn2j,pn2k)[dir2];
-  double & e3 = electric_field(pn3i,pn3j,pn3k)[dir1];
-  double & e4 = electric_field(pn4i,pn4j,pn4k)[dir2];
+//Evaluate the trial field
+  double & e1 = electric_field(loop.node1()[0],loop.node1()[1],loop.node1()[2])[loop.dir1()];
+  double & e2 = electric_field(loop.node2()[0],loop.node2()[1],loop.node2()[2])[loop.dir2()];
+  double & e3 = electric_field(loop.node3()[0],loop.node3()[1],loop.node3()[2])[loop.dir1()];
+  double & e4 = electric_field(loop.node4()[0],loop.node4()[1],loop.node4()[2])[loop.dir2()];
   double delta_field=-.25*(e1+e2-e3-e4);
   double e1p=e1+delta_field;
   double e2p=e2+delta_field;
@@ -476,33 +352,58 @@ double try_move(Array<TinyVector<double,3>,3> & electric_field,
   double e4p=e4-delta_field;
   //Evaluate the change in the functional
   double delta_func=(e1p*e1p+e2p*e2p+e3p*e3p+e4p*e4p
-		     -e1*e1-e2*e2-e3*e3-e4*e4);
+                     -e1*e1-e2*e2-e3*e3-e4*e4);
   //cout << "Dfunc=" << delta_func << endl;
   //Accept/reject move
   if(delta_func<0)
-    {
-      e1=e1p;
-      e2=e2p;
-      e3=e3p;
-      e4=e4p;
-      //cout << delta_func << endl;
-    }
-  //Return the change in the functional
-  return(delta_func);
+  {
+    e1=e1p;
+    e2=e2p;
+    e3=e3p;
+    e4=e4p;
+  }
 };
 
-
-
-
-double sequential_loop_move(Array<TinyVector<double,3>,3> & electric_field,
-		 const int & nx,const int & ny,const int & nz,
-		 const double & lx,const double & ly,const double & lz)
+void sequential_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
+                                 const Grid & grid)
 {
   double delta_func;
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      for(int k=0;k<nz;++k)
-	for (int plaquete=0;plaquete<3;++plaquete)
-	  delta_func=try_move(electric_field,nx,ny,nz,i,j,k,plaquete);
-  return delta_func;
+  for(int i=0;i<grid.nx();++i)
+    for(int j=0;j<grid.ny();++j)
+      for(int k=0;k<grid.nz();++k)
+        for (int loop_number=0;loop_number<3;++loop_number)
+        { 
+//Create the loop
+          Loop loop(blitz::TinyVector<int,3>(i,j,k),loop_number,grid);
+//Perform the loop move
+          loop_move(electric_field,grid,loop);
+        }
 }
+
+void random_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field,
+                            const Grid & grid)
+{
+  //Choose 3x the number of nodes
+  for(int nn=0;nn<3*electric_field.size();++nn)
+  {
+  //Choose a node
+    DiscreteUniform<int> rgx(grid.nx());
+    DiscreteUniform<int> rgy(grid.ny());
+    DiscreteUniform<int> rgz(grid.nz());
+    int ni = rgx.random();
+    int nj = rgy.random();
+    int nk = rgz.random();
+  //cout << "Node: " << ni << " " << nj << " " << nk << endl;
+  //Choose a loop
+    DiscreteUniform<int> rgp(3);
+    int loop_number=rgp.random();
+  //cout << "Loop number: " << loop_number << endl;
+  //Create the loop
+    Loop loop(blitz::TinyVector<int,3>(ni,nj,nk),loop_number,grid);
+  //Perform the loop move
+  loop_move(electric_field,grid,loop);
+  }
+}
+
+
+
