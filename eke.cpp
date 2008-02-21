@@ -39,10 +39,10 @@ int main()
   nx=32;
   ny=nx;
   nz=ny;
-  lx=10.;
-  ly=10.;
-  lz=10.;
-  rs=1.;
+  lx=32.;
+  ly=32.;
+  lz=32.;
+  rs=6.;
   total_charge=1.;
 
    //Grid
@@ -114,7 +114,7 @@ int main()
           ef_test(i,j,k)=grid.coordinates()(i,j,k);
           ef_test(i,j,k)*=.25/M_PI*total_charge/pow(norm(grid.coordinates()(i,j,k)),3);
 	    ef_test(i,j,k)-=electric_field(i,j,k);
-	    ef_test(i,j,k)/=norm(electric_field(i,j,k));
+          //ef_test(i,j,k)/=norm(electric_field(i,j,k));
 	    //cout << "EFT: " << ef_test(i,j,k) << endl;
 	  }
 	else
@@ -291,8 +291,12 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
   cout << "Mean: " << mean(electric_field[0]) << endl;
   cout << "Mean: " << mean(electric_field[1]) << endl;
   cout << "Mean: " << mean(electric_field[2]) << endl;
-
-  //exit(0);
+  for(int i=0;i<nx;++i)
+    for(int j=0;j<ny;++j)
+      for(int k=0;k<nz;++k)
+        for(int mm=0;mm<3;++mm)
+          if(electric_field(i,j,k)[mm]>1e-2)
+            cout << electric_field(i,j,k)[mm] << endl;
 
   
 
@@ -319,7 +323,7 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
 	  n2=k;
 	  double divz=electric_field[2](i,j,n2)-electric_field[2](i,j,n1);
 	  double div=divx+divy+divz;
-	  if (fabs(div-charges(i,j,k))>.5e-16)
+	  if (fabs(div-charges(i,j,k))>.5e-10)
 	    {
 	      cout << i << " " << j << " " << k << " " 
 		   << divx << " " << divy <<" " << divz << " " 
@@ -362,6 +366,7 @@ void loop_move(Array<TinyVector<double,3>,3> & electric_field,
     e3=e3p;
     e4=e4p;
   }
+  //cout << "Circulation: " << e1+e2-e3-e4 << endl;
 };
 
 void sequential_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
