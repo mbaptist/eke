@@ -1,3 +1,8 @@
+
+#ifndef GRID_HPP
+#define GRID_HPP
+
+
 #include <blitz/blitz.h>
 #include <blitz/array.h>
 #include <blitz/tiny.h>
@@ -134,3 +139,6 @@ private:
   Loop();
   
 };
+
+
+#endif
