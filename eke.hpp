@@ -19,12 +19,5 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
 
 double functional(Array<TinyVector<double,3>,3> & electric_field);
 
-void loop_move(Array<TinyVector<double,3>,3> & electric_field,
-               const Grid & grid,
-               const Loop & loop);
 
-void sequential_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
-                            const Grid & grid);
-void random_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
-                            const Grid & grid);
 

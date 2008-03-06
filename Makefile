@@ -9,7 +9,7 @@ DEBUG =
 IFLAGS = $(DEBUG) $(INCLUDE)
 FLAGS = $(DEBUG) $(LIB)
 
-OBJECTS = eke.o grid.o
+OBJECTS = eke.o grid.o maggs.o
 
 ###############################################################################
 

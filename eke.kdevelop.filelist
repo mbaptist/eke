@@ -2,6 +2,9 @@
 Makefile
 eke.cpp
 eke.hpp
+field.hpp
 geometry.hpp
 grid.cpp
 grid.hpp
+maggs.cpp
+maggs.hpp
