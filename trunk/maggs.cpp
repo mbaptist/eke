@@ -17,6 +17,31 @@ using namespace ranlib;
 
 
 
+void charge_move(Array<TinyVector<double,3>,3> & electric_field,
+                 Array<double,3> & charge,
+                 const Grid & grid,
+                 const TinyVector<int,3> & node, const int & dir)
+{
+  
+  TinyVector<int,3> node2(node);
+  node2[dir]+=1;
+  
+  double & q = charge(node[0],node[1],node[2]);
+  double & q2 = charge(node2[0],node2[1],node2[2]);
+  double & e =   electric_field(node[0],node[1],node[2])[dir];
+  double ep=0;
+  //Evaluate the change in the functional
+  double delta_func=ep*ep-e*e;
+  if(delta_func<0)
+  {
+    e=ep;
+    q-=e;
+    q2+=e;
+  }
+}
+
+
+
 void loop_move(Array<TinyVector<double,3>,3> & electric_field,
                const Grid & grid,
                const Loop & loop)

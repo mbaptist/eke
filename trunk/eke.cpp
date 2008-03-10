@@ -46,6 +46,29 @@ int main()
   rs=6.;
   total_charge=100.;
 
+  
+#if 0
+  //Geometry
+  
+  Geometry geometry();
+  
+  Cube cube();
+  Sphere sphere();
+  
+  geometry.add_domain(cube);
+  geometry.add_outer_boundary(cube);
+  
+  
+  //Grid
+  Grid (geometry,shape);
+  
+  
+#endif
+  
+  
+#if 1
+  
+  
    //Grid
   Grid grid(nx,ny,nz,lx,ly,lz,rs);
 
@@ -125,6 +148,9 @@ int main()
   cout << max(dot(ef_test,ef_test)) << endl;
   //cout << "TEST: " << sum(dot(electric_field,electric_field))/(nx*ny*nz) << endl;
 
+#endif
+  
+  
   return 0;
 }
 
@@ -333,14 +359,14 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
 	    }
 	}
 #endif 
-
+  
+  
 }
 
 double functional(Array<TinyVector<double,3>,3> & electric_field)
 {
   return double(.5*sum(dot(electric_field,electric_field)));
 }
-
 
 
 
