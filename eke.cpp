@@ -44,7 +44,7 @@ int main()
   ly=32.;
   lz=32.;
   rs=6.;
-  total_charge=100.;
+  total_charge=1000000000.;
 
   
 #if 0
@@ -106,6 +106,7 @@ int main()
       ++num_steps;
       cout << "Minimisation step " << num_steps << endl;
       sequential_sweep_loop_moves(electric_field,grid);
+      sequential_sweep_charge_moves(electric_field,charges,grid);
       double func=functional(electric_field);      
       double delta_func=func-func0;
       cout << "Functional before // Functional after // Variation" << endl;
@@ -209,6 +210,27 @@ void initialise_colloid(Array<double,3> & charges,
     point_type(ind_np_x,ind_np_y,ind_np_z)=4;     
   }
   
+  
+for(int n=0;n<np;++n)
+{
+  DiscreteUniform<int> rgx(grid.nx());
+  DiscreteUniform<int> rgy(grid.ny());
+  DiscreteUniform<int> rgz(grid.nz());
+  while(1)
+  {
+    int ni = rgx.random();
+    int nj = rgy.random();
+    int nk = rgz.random();
+    if(grid.point_type()(ni,nj,nk)==1)
+       {
+       charges(ni,nj,nk)+=-delta_charge;
+         break;
+       }
+  }
+}
+  
+#if 0  
+  
   //Put negative charges at the outer sphere
   for(int n=0;n<np;++n)
     {
@@ -245,7 +267,7 @@ void initialise_colloid(Array<double,3> & charges,
       charges(ind_np_x,ind_np_y,ind_np_z)+=-delta_charge;
       point_type(ind_np_x,ind_np_y,ind_np_z)=2;     
     }     
-      
+#endif
 
 }
 

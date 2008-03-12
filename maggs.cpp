@@ -18,29 +18,44 @@ using namespace ranlib;
 
 
 void charge_move(Array<TinyVector<double,3>,3> & electric_field,
-                 Array<double,3> & charge,
+                 Array<double,3> & charges,
                  const Grid & grid,
                  const TinyVector<int,3> & node, const int & dir)
 {
-  
-  TinyVector<int,3> node2(node);
-  node2[dir]+=1;
-  
-  double & q = charge(node[0],node[1],node[2]);
-  double & q2 = charge(node2[0],node2[1],node2[2]);
-  double & e =   electric_field(node[0],node[1],node[2])[dir];
-  double ep=0;
-  //Evaluate the change in the functional
-  double delta_func=ep*ep-e*e;
-  if(delta_func<0)
+  if(grid.point_type()(node[0],node[1],node[2])==1)
   {
-    e=ep;
-    q-=e;
-    q2+=e;
+    TinyVector<int,3> node2(node);
+    node2[dir]+=1;
+    
+    double & q = charges(node[0],node[1],node[2]);
+    double & q2 = charges(node2[0],node2[1],node2[2]);
+    double & e =   electric_field(node[0],node[1],node[2])[dir];
+    double ep=0;
+  //Evaluate the change in the functional
+    double delta_func=ep*ep-e*e;
+    if(delta_func<0)
+    {
+      e=ep;
+      q-=e;
+      q2+=e;
+    }
   }
 }
 
-
+void sequential_sweep_charge_moves(Array<TinyVector<double,3>,3> & electric_field, 
+                                   Array<double,3> & charges,
+                                   const Grid & grid)
+{
+  double delta_func;
+  for(int i=0;i<grid.nx();++i)
+    for(int j=0;j<grid.ny();++j)
+      for(int k=0;k<grid.nz();++k)
+        for (int dir=0;dir<3;++dir)
+        { 
+//Perform the charge move
+          charge_move(electric_field,charges,grid,TinyVector<int,3>(i,j,k),dir);
+        }
+}
 
 void loop_move(Array<TinyVector<double,3>,3> & electric_field,
                const Grid & grid,
