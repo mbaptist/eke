@@ -54,7 +54,7 @@ void loop_move(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field,
 
 //// LATTICE SWEEPS ////
 
-void sequential_sweep_charge_moves(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field, 
+void sequential_sweep_concentration_moves(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field, 
                                    blitz::Array<double,3> & charges,
                                    const Grid & grid);
 
@@ -70,7 +70,7 @@ void initialise_electric_field(blitz::Array<blitz::TinyVector<double,3>,3> & ele
                                const Grid & grid);
 
 
-//// FUNTIONALS ////
+//// FUNCTIONALS ////
 
 //Functional for electrostitcs
 double functional(const blitz::Array<blitz::TinyVector<double,3>,3> & electric_field);

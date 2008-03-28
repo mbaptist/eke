@@ -117,7 +117,7 @@ int main()
       ++num_steps;
       cout << "Minimisation step " << num_steps << endl;
       sequential_sweep_loop_moves(electric_field,grid);
-      sequential_sweep_charge_moves(electric_field,charges,grid);
+	    sequential_sweep_concentration_moves(electric_field,charges,grid);
       double func=functional(electric_field);      
       double delta_func=func-func0;
       cout << "Functional before // Functional after // Variation" << endl;

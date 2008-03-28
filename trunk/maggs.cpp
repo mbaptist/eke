@@ -34,12 +34,7 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "maggs.hpp"
 
-#include <blitz/blitz.h>
-#include <blitz/array.h>
-#include <blitz/tiny.h>
-#include <blitz/tinyvec.h>
-
-using namespace blitz;
+#include "types.hpp"
 
 #include <blitz/random.h>
 #include <random/uniform.h>
@@ -317,7 +312,9 @@ double functional(const Array<TinyVector<double,3>,3> & electric_field)
 double functional(const Array<double,3> & concentration,
                   const Array<TinyVector<double,3>,3> & electric_field)
 {
-	return double(.5*sum(dot(electric_field,electric_field))+concentration*log(concentration));
+	return double(.5*sum(dot(electric_field,electric_field))
+	              //+concentration*log(concentration)
+		);
 }
 
 

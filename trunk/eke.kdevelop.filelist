@@ -8,3 +8,4 @@ grid.cpp
 grid.hpp
 maggs.cpp
 maggs.hpp
+types.hpp
