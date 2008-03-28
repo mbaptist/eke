@@ -41,33 +41,42 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 #include <blitz/tiny.h>
 #include <blitz/tinyvec.h>
 
+//// BASIC MOVES ////
+
 void charge_move(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field,
                  blitz::Array<double,3> & charges,
                  const Grid & grid,
                  const blitz::TinyVector<int,3> & node, const int & dir);
 
-void sequential_sweep_charge_moves(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field, 
-                                   blitz::Array<double,3> & charges,
-                                   const Grid & grid);
-
 void loop_move(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field,
                const Grid & grid,
                const Loop & loop);
+
+//// LATTICE SWEEPS ////
+
+void sequential_sweep_charge_moves(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field, 
+                                   blitz::Array<double,3> & charges,
+                                   const Grid & grid);
 
 void sequential_sweep_loop_moves(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field, 
                                  const Grid & grid);
 void random_sweep_loop_moves(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field, 
                              const Grid & grid);
 
+//// INITIALISATIONS ////
 
-#if 0
-void loop_move(VField & electric_field,const Grid & grid,const Loop & loop);
+void initialise_electric_field(blitz::Array<blitz::TinyVector<double,3>,3> & electric_field,
+                               const blitz::Array<double,3> & charges,
+                               const Grid & grid);
 
-void sequential_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
-                                 const Grid & grid);
-void random_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field, 
-                             const Grid & grid);
-#endif
+
+//// FUNTIONALS ////
+
+//Functional for electrostitcs
+double functional(const blitz::Array<blitz::TinyVector<double,3>,3> & electric_field);
+//Functional for Poisson-Boltzmann
+double functional(const blitz::Array<double,3> & concentration,
+                  const blitz::Array<blitz::TinyVector<double,3>,3> & electric_field);
 
 
 #endif
