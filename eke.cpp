@@ -79,36 +79,14 @@ int main()
   rs=6.;
   total_charge=1000000000000.;
 
-  
-#if 0
-  //Geometry
-  
-  Geometry geometry();
-  
-  Cube cube();
-  Sphere sphere();
-  
-  geometry.add_domain(cube);
-  geometry.add_outer_boundary(cube);
-  
-  
-  //Grid
-  Grid (geometry,shape);
-  
-  
-#endif
-  
-  
-#if 1
-  
-  
+
    //Grid
   Grid grid(nx,ny,nz,lx,ly,lz,rs);
 
-  //Charges
+  //Charges	
   Array<double,3> charges(nx,ny,nz);
-  //Distribute the charges over the surface of the colloid
-  initialise_colloid(charges,grid,total_charge);
+  //Distribute the charges
+  distribute_charges(charges,grid,total_charge);
   
   //Save charges
   ofstream ofs("charges.dat");
@@ -160,37 +138,15 @@ int main()
       ofs3 << endl;
     }
 
-  //Test
-  Array<TinyVector<double,3>,3> ef_test(nx,ny,nz);
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      for(int k=0;k<nz;++k)
-        if(grid.point_type()(i,j,k)==3)
-	  {
-	    //cout << "EF: " << electric_field(i,j,k) << endl;
-	    //cout << "TT" << endl;
-          ef_test(i,j,k)=grid.coordinates()(i,j,k);
-          ef_test(i,j,k)*=.25/M_PI*total_charge/pow(norm(grid.coordinates()(i,j,k)),3);
-	    ef_test(i,j,k)-=electric_field(i,j,k);
-          //ef_test(i,j,k)/=norm(electric_field(i,j,k));
-	    //cout << "EFT: " << ef_test(i,j,k) << endl;
-	  }
-	else
-	  ef_test(i,j,k)=0;
 
-  cout << "TEST: " << sum(dot(ef_test,ef_test))/(nx*ny*nz) << endl;
-  cout << max(dot(ef_test,ef_test)) << endl;
-  //cout << "TEST: " << sum(dot(electric_field,electric_field))/(nx*ny*nz) << endl;
 
-#endif
-  
-  
+ 
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-void initialise_colloid(Array<double,3> & charges,
+void distribute_charges(Array<double,3> & charges,
                         Grid & grid,
                         const double & total_charge)
 {
@@ -304,124 +260,8 @@ for(int n=0;n<np;++n)
 
 }
 
-void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
-                               const Array<double,3> & charges,
-                               const Grid & grid)
-{
-  int nx(grid.nx());
-  int ny(grid.ny());
-  int nz(grid.nz());
-  electric_field=TinyVector<double,3>(0,0,0);
-  Array<double,3> charge(charges.copy());
-  double mean_charge;
-  //Ex
-  mean_charge=mean(charge(0,Range::all(),Range::all()));
-  charge(0,Range::all(),Range::all())-=mean_charge;
-  for(int j=0;j<ny;++j)
-    for(int k=0;k<nz;++k)
-      electric_field[0](0,j,k)=mean_charge;
-  for(int i=1;i<nx-1;++i)
-    {
-      mean_charge=mean(charge(i,Range::all(),Range::all()));
-      charge(i,Range::all(),Range::all())-=mean_charge;
-      double efield=electric_field[0](i-1,0,0)+mean_charge;
-       for(int j=0;j<ny;++j)
-	for(int k=0;k<nz;++k)
-	  electric_field[0](i,j,k)=efield;
-    }
-  mean_charge=mean(charge(nx-1,Range::all(),Range::all()));
-  charge(nx-1,Range::all(),Range::all())-=mean_charge;
-  for(int j=0;j<ny;++j)
-    for(int k=0;k<nz;++k)
-      electric_field[0](nx-1,j,k)=0.;
-  //Ey
-  for(int i=0;i<nx;++i)
-    {
-      mean_charge=mean(charge(i,0,Range::all()));
-      charge(i,0,Range::all())-=mean_charge;
-      for(int k=0;k<nz;++k)
-	electric_field[1](i,0,k)=mean_charge;
-      for(int j=1;j<ny-1;++j)
-	{
-	  mean_charge=mean(charge(i,j,Range::all()));
-	  charge(i,j,Range::all())-=mean_charge;
-	  double efield=electric_field[1](i,j-1,0)+mean_charge;
-	  for(int k=0;k<nz;++k)
-	    electric_field[1](i,j,k)=efield;
-	}
-      mean_charge=mean(charge(i,ny-1,Range::all()));
-      charge(i,ny-1,Range::all())-=mean_charge;
-      for(int k=0;k<nz;++k)
-	electric_field[1](i,ny-1,k)=0.;
-    }
-  //Ez
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      {
-	electric_field[2](i,j,0)=charge(i,j,0);
-	for(int k=1;k<nz-1;++k)
-	  electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+charge(i,j,k);
-	electric_field[2](i,j,nz-1)=0;
-      }
 
-  cout << "Mean: " << mean(electric_field[0]) << endl;
-  cout << "Mean: " << mean(electric_field[1]) << endl;
-  cout << "Mean: " << mean(electric_field[2]) << endl;
-  electric_field[0]-=mean(electric_field[0]);
-  electric_field[1]-=mean(electric_field[1]);
-  electric_field[2]-=mean(electric_field[2]);
-  cout << "Mean: " << mean(electric_field[0]) << endl;
-  cout << "Mean: " << mean(electric_field[1]) << endl;
-  cout << "Mean: " << mean(electric_field[2]) << endl;
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      for(int k=0;k<nz;++k)
-        for(int mm=0;mm<3;++mm)
-          if(electric_field(i,j,k)[mm]>1e-2)
-            cout << electric_field(i,j,k)[mm] << endl;
 
-  
-
-#if 1
-  //Test for div E = \rho
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      for(int k=0;k<nz;++k)
-	{
-	  int n1,n2;
-	  n1=i-1;
-	  if (n1==-1)
-	    n1=nx-1;
-	  n2=i;
-	  double divx=electric_field[0](n2,j,k)-electric_field[0](n1,j,k);
-	  n1=j-1;
-	  if (n1==-1)
-	    n1=ny-1;
-	  n2=j;
-	  double divy=electric_field[1](i,n2,k)-electric_field[1](i,n1,k);
-	  n1=k-1;
-	  if (n1==-1)
-	    n1=nz-1;
-	  n2=k;
-	  double divz=electric_field[2](i,j,n2)-electric_field[2](i,j,n1);
-	  double div=divx+divy+divz;
-	  if (fabs(div-charges(i,j,k))>.5e-10)
-	    {
-	      cout << i << " " << j << " " << k << " " 
-		   << divx << " " << divy <<" " << divz << " " 
-		   << div << " " << charges(i,j,k) << endl;
-	      exit(1);
-	    }
-	}
-#endif 
-  
-  
-}
-
-double functional(Array<TinyVector<double,3>,3> & electric_field)
-{
-  return double(.5*sum(dot(electric_field,electric_field)));
-}
 
 
 
