@@ -1,35 +1,7 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <!DOCTYPE KDevPrjSession>
 <KDevPrjSession>
- <DocsAndViews NumberOfDocuments="9" >
-  <Doc0 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/eke.cpp" >
-   <View0 Encoding="" line="145" Type="Source" />
-  </Doc0>
-  <Doc1 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/field.hpp" >
-   <View0 Encoding="" line="13" Type="Source" />
-  </Doc1>
-  <Doc2 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/grid.hpp" >
-   <View0 Encoding="" line="46" Type="Source" />
-  </Doc2>
-  <Doc3 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/maggs.cpp" >
-   <View0 Encoding="" line="36" Type="Source" />
-  </Doc3>
-  <Doc4 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/eke.hpp" >
-   <View0 Encoding="" line="48" Type="Source" />
-  </Doc4>
-  <Doc5 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/maggs.hpp" >
-   <View0 Encoding="" line="38" Type="Source" />
-  </Doc5>
-  <Doc6 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/grid.cpp" >
-   <View0 Encoding="" line="36" Type="Source" />
-  </Doc6>
-  <Doc7 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/geometry.hpp" >
-   <View0 Encoding="" line="63" Type="Source" />
-  </Doc7>
-  <Doc8 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/Actions/Projects/eke/types.hpp" >
-   <View0 Encoding="" line="59" Type="Source" />
-  </Doc8>
- </DocsAndViews>
+ <DocsAndViews NumberOfDocuments="0" />
  <pluginList>
   <kdevdebugger>
    <breakpointList/>
