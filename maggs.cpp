@@ -31,14 +31,9 @@ You should have received a copy of the GNU General Public License
 along with eke.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include "maggs.hpp"
-
 #include "types.hpp"
-
-#include <blitz/random.h>
-#include <random/uniform.h>
-#include <random/discrete-uniform.h>
+#include "random.hpp"
 
 using namespace ranlib;
 
@@ -47,14 +42,14 @@ using namespace ranlib;
 //// BASIC MOVES ////
 
 
-void concentration_move(Array<TinyVector<double,3>,3> & electric_field,
-                        Array<double,3> & concentration,
+void concentration_move(RVF & electric_field,
+                        RSF & concentration,
                         const Grid & grid,
-                        const TinyVector<int,3> & node1, const int & dir)
+                        const IV & node1, const int & dir)
 {
 	if (grid.point_type()(node1[0],node1[1],node1[2])==1)
 	{
-		TinyVector<int,3> node2(node1);
+		IV node2(node1);
 		node2[dir]+=1;
 		double & c1 = concentration(node1[0],node1[1],node1[2]);
 		double & c2 = concentration(node2[0],node2[1],node2[2]);
@@ -86,7 +81,7 @@ void concentration_move(Array<TinyVector<double,3>,3> & electric_field,
 }
 
 
-void loop_move(Array<TinyVector<double,3>,3> & electric_field,
+void loop_move(RVF & electric_field,
                const Grid & grid,
                const Loop & loop)
 {
@@ -125,8 +120,8 @@ void loop_move(Array<TinyVector<double,3>,3> & electric_field,
 //// LATTICE SWEEPS ////
 
 
-void sequential_sweep_concentration_moves(Array<TinyVector<double,3>,3> & electric_field,
-                                          Array<double,3> & concentrations,
+void sequential_sweep_concentration_moves(RVF & electric_field,
+                                          RSF & concentrations,
                                           const Grid & grid)
 {
 	double delta_func;
@@ -141,7 +136,7 @@ void sequential_sweep_concentration_moves(Array<TinyVector<double,3>,3> & electr
 }
 
 
-void sequential_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field,
+void sequential_sweep_loop_moves(RVF & electric_field,
                                  const Grid & grid)
 {
 	double delta_func;
@@ -157,7 +152,7 @@ void sequential_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field,
 				}
 }
 
-void random_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field,
+void random_sweep_loop_moves(RVF & electric_field,
                              const Grid & grid)
 {
   //Choose 3x the number of nodes
@@ -185,15 +180,15 @@ void random_sweep_loop_moves(Array<TinyVector<double,3>,3> & electric_field,
 
 //// INITIALISATIONS ////
 
-void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
-                               const Array<double,3> & charges,
+void initialise_electric_field(RVF & electric_field,
+                               const RSF & charges,
                                const Grid & grid)
 {
 	int nx(grid.nx());
 	int ny(grid.ny());
 	int nz(grid.nz());
 	electric_field=TinyVector<double,3>(0,0,0);
-	Array<double,3> charge(charges.copy());
+	RSF charge(charges.copy());
 	double mean_charge;
   //Ex
 	mean_charge=mean(charge(0,Range::all(),Range::all()));
@@ -303,14 +298,14 @@ void initialise_electric_field(Array<TinyVector<double,3>,3> & electric_field,
 //// FUNCTIONALS ////
 
 //Functional for electrostitcs
-double functional(const Array<TinyVector<double,3>,3> & electric_field)
+double functional(const RVF & electric_field)
 {
 	return double(.5*sum(dot(electric_field,electric_field)));
 }
 
 //Functional for Poisson-Boltzmann
-double functional(const Array<double,3> & concentration,
-                  const Array<TinyVector<double,3>,3> & electric_field)
+double functional(const RSF & concentration,
+                  const RVF & electric_field)
 {
 	return double(.5*sum(dot(electric_field,electric_field))
 	              //+concentration*log(concentration)
