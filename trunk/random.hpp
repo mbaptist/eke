@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
 //
-// C++ Interface: geometry
+// C++ Interface: random
 //
 // Description: 
 //
@@ -31,33 +31,15 @@ You should have received a copy of the GNU General Public License
 along with eke.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#ifndef GEOMETRY_HPP
-#define GEOMETRY_HPP
-
-class GeometryObject
-{
-public:  
-  
-};
+#ifndef RANDOM_HPP
+#define RANDOM_HPP
 
 
-class Sphere: public GeometryObject
-{
-  
-};
+#include <blitz/random.h>
+#include <random/uniform.h>
+#include <random/discrete-uniform.h>
 
+using namespace ranlib;
 
-class Block: public GeometryObject
-{
-  
-  
-  
-};
-
-
-class Geometry: public blitz::Array<GeometryObject,1>
-{
-};
 
 #endif

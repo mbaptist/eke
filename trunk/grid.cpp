@@ -34,11 +34,7 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "grid.hpp"
 
-#include <blitz/blitz.h>
-#include <blitz/array.h>
-#include <blitz/tiny.h>
-#include <blitz/tinyvec.h>
-using namespace blitz;
+#include "types.hpp"
 
 
 //Ctor

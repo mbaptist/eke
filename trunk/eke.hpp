@@ -31,19 +31,18 @@ You should have received a copy of the GNU General Public License
 along with eke.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <blitz/blitz.h>
-#include <blitz/array.h>
-#include <blitz/tiny.h>
-#include <blitz/tinyvec.h>
+#ifndef EKE_HPP
+#define EKE_HPP
 
-using namespace blitz;
+
+#include "types.hpp"
 
 #include "grid.hpp"
 
-void distribute_charges(Array<double,3> & charges, 
+void distribute_charges(RSF & charges, 
                         Grid & grid,
                         const double & total_charge);
 
 
 
-
+#endif

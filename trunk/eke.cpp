@@ -37,23 +37,8 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-#include <blitz/blitz.h>
-#include <blitz/array.h>
-#include <blitz/tiny.h>
-#include <blitz/tinyvec.h>
-
-using namespace blitz;
-
-BZ_DECLARE_FUNCTION_RET(norm,double)
-BZ_DECLARE_FUNCTION2_RET(dot,double)
-
-
-#include <blitz/random.h>
-#include <random/uniform.h>
-#include <random/discrete-uniform.h>
-
-using namespace ranlib;
-
+#include "types.hpp"
+#include "random.hpp"
 #include "eke.hpp"
 #include "maggs.hpp"
 
@@ -77,14 +62,14 @@ int main()
   ly=32.;
   lz=32.;
   rs=6.;
-  total_charge=1000000000000.;
+  total_charge=100000.;
 
 
    //Grid
   Grid grid(nx,ny,nz,lx,ly,lz,rs);
 
   //Charges	
-  Array<double,3> charges(nx,ny,nz);
+  RSF charges(nx,ny,nz);
   //Distribute the charges
   distribute_charges(charges,grid,total_charge);
   
@@ -96,7 +81,7 @@ int main()
    //cout << charge_density << endl;
 
   //electric field
-  Array<TinyVector<double,3>,3> electric_field(nx,ny,nz);
+  RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,charges,grid);
 
   //Save initial electric field
@@ -146,7 +131,7 @@ int main()
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-void distribute_charges(Array<double,3> & charges,
+void distribute_charges(RSF & charges,
                         Grid & grid,
                         const double & total_charge)
 {
@@ -157,8 +142,8 @@ void distribute_charges(Array<double,3> & charges,
   double ly(grid.ly());
   double lz(grid.lz());
   double rs(grid.rs());
-  const blitz::Array<blitz::TinyVector<double,3>,3> & coordinates(grid.coordinates());
-  blitz::Array<int,3> & point_type(grid.point_type());
+  const RVF & coordinates(grid.coordinates());
+  ISF & point_type(grid.point_type());
   charges=0;
   int np=100000;
   double delta_charge=total_charge/np;
