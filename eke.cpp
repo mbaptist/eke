@@ -41,6 +41,7 @@ using namespace std;
 #include "random.hpp"
 #include "eke.hpp"
 #include "maggs.hpp"
+#include "input.hpp"
 
 
 ///////////////////////////////////////////
@@ -50,20 +51,24 @@ int main()
 
   cout << fixed << setprecision(20);
 
-  //Input (in future via python)
-  int nx,ny,nz;
-  double lx,ly,lz;
-  double rs;
-  double total_charge;
-  nx=32;
-  ny=nx;
-  nz=ny;
-  lx=32.;
-  ly=32.;
-  lz=32.;
-  rs=6.;
-  total_charge=100000.;
 
+	//Input
+	//Read input file
+	PyInputParser input("default.run");
+	//Grid parameters
+	int nx=input.parse_int("nx");
+	int ny=input.parse_int("ny");
+	int nz=input.parse_int("nz");
+	//Geometry parameters
+	double lx=input.parse_double("lx");
+	double ly=input.parse_double("ly");
+	double lz=input.parse_double("lz");
+	double rs=input.parse_double("rs");
+	//Physical parameters
+	int number_of_charges=input.parse_int("number_of_charges");
+	
+	
+	double total_charge=number_of_charges;//To remove
 
    //Grid
   Grid grid(nx,ny,nz,lx,ly,lz,rs);

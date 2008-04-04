@@ -1,0 +1,13 @@
+#!/usr/bin/python
+
+#Grid parameters
+nx=32;
+ny=nx;
+nz=ny;
+#Geometry parameters
+lx=32.;
+ly=32.;
+lz=32.;
+rs=6.;
+#Physical parameters
+number_of_charges=100000;

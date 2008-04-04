@@ -48,70 +48,10 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-
-//Forward declaration of class py_input_parser
-class py_input_parser;
-
-
 ///////////////////////////////////////////
-// Declaration of class Input
+// Declaration of class PyInputParser
 ///////////////////////////////////////////
-class Input
-  {
-  public:
-    //constructor from filename
-    Input(std::string cfg_fname);
-    //constructor from python object
-    Input(PyObject * module);
-    //destructor
-    ~Input();
-  public:
-    string runsname;
-    //Input parameters
-    int n1,n2,n3;//Spatial grid
-    double l1,l2,l3,ell1,ell2;//Spatial extent
-    //physical Parameters
-    double visc,omegaz,compress,g,diff,deltat,econd,tcond;
-
-    //refine and resume
-    bool refine,resume;
-    std::string lr_runsname;
-    int lr_n1,lr_n2,lr_n3;
-
-    //basic fields
-    std::string basic_mode;
-    //Random Mode
-    std::string br_spectrum;
-    int br_seed,br_ki,br_kf;
-    double 	br_alpha,br_rms_norm;
-    bool	br_kind,br_sym;
-
-
-    //large scale stability
-
-    double ls_eps;
-    double qq;
-    double qq_adj;
-    int kk;
-    double small;
-    double small_adj;
-
-    //short scale stability
-    int sym_sub,mp,nseq,sss_seed,sss_basic_restore_seed;
-    double ep,thr,sc;
-    std::string sss_ifname,sss_int_ofbname;
-
-  private:
-    //load from config file
-    void py_load_Input(py_input_parser & parse);
-  };
-
-
-///////////////////////////////////////////
-// Declaration of class py_input_parser
-///////////////////////////////////////////
-class py_input_parser
+class PyInputParser
   {
   private:
     //Filename to parse
@@ -119,25 +59,25 @@ class py_input_parser
     //Python objects
     PyObject * module;
     PyObject * dict;
-    PyObject * pval(const string & item);
+    PyObject * pval(const std::string & item);
     PyThreadState * inter;
     bool python_initialised;
   public:
     //Constructor from filename
-    py_input_parser(string filename_);
+    PyInputParser(std::string filename_);
     //Constructor from dict
-    py_input_parser(PyObject * module_);
+    PyInputParser(PyObject * module_);
     //Destructor
-    ~py_input_parser();
+    ~PyInputParser();
     //Python to C++ conversion function
-    void operator()(int & val,const std::string & item);
-    void operator()(bool & val,const std::string & item);
-    void operator()(double & val,const std::string & item);
-    void operator()(std::string & val,const std::string & item);
+    int parse_int(const std::string & item);
+    bool parse_bool(const std::string & item);
+    double parse_double(const std::string & item);
+    std::string parse_string(const std::string & item);
   private:
     //Forbidden constructors
-    py_input_parser();//default
-    py_input_parser(const py_input_parser &);//copy
+    PyInputParser();//default
+    PyInputParser(const PyInputParser &);//copy
   };
 
 

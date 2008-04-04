@@ -23,12 +23,17 @@ CXX = g++
 DEBUG =
 #-g
 
+PYTHON_VERSION=$(shell python -c "import sys ; print sys.version[:3]")
+
+INCLUDE=-I/usr/include/python$(PYTHON_VERSION)
+LIB=-lpython$(PYTHON_VERSION)
+
 ###############################################################################
 
 IFLAGS = $(DEBUG) $(INCLUDE)
 FLAGS = $(DEBUG) $(LIB)
 
-OBJECTS = eke.o grid.o maggs.o
+OBJECTS = eke.o grid.o maggs.o input.o
 
 ###############################################################################
 
@@ -44,5 +49,5 @@ distclean: clean
 	$(CXX) $(IFLAGS) -c $<
 
 eke: $(OBJECTS) 
-	$(CXX) -o eke $(OBJECTS)
+	$(CXX) -o eke $(OBJECTS) $(FLAGS)
 

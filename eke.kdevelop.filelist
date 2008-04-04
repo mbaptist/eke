@@ -2,10 +2,14 @@
 Makefile
 eke.cpp
 eke.hpp
+eke_python.cpp
 field.hpp
 geometry.hpp
 grid.cpp
 grid.hpp
+input.cpp
+input.hpp
 maggs.cpp
 maggs.hpp
 random.hpp
+types.hpp
