@@ -58,7 +58,7 @@ void concentration_move(RVF & electric_field,
 		//solve for the optimal concentration change with fixed point iterations
 		double deltac;
 		double deltac0=1.;
-		double area=1;
+		double area=grid.deltas(dir);
 		while(1)
 		{
 			deltac=(c1*exp((e+deltac0/area)/area)-c2)/(exp((e+deltac0/area)/area)+1);
@@ -191,6 +191,7 @@ void initialise_electric_field(RVF & electric_field,
 	RSF charge(charges.copy());
 	double mean_charge;
   //Ex
+	double area=grid.deltasx();
 	mean_charge=mean(charge(0,Range::all(),Range::all()));
 	charge(0,Range::all(),Range::all())-=mean_charge;
 	for(int j=0;j<ny;++j)
@@ -211,6 +212,7 @@ void initialise_electric_field(RVF & electric_field,
 		for(int k=0;k<nz;++k)
 			electric_field[0](nx-1,j,k)=0.;
   //Ey
+	area=grid.deltasy();
 	for(int i=0;i<nx;++i)
 	{
 		mean_charge=mean(charge(i,0,Range::all()));
@@ -231,6 +233,7 @@ void initialise_electric_field(RVF & electric_field,
 			electric_field[1](i,ny-1,k)=0.;
 	}
   //Ez
+	area=grid.deltasz();
 	for(int i=0;i<nx;++i)
 		for(int j=0;j<ny;++j)
 		{
@@ -309,7 +312,7 @@ double functional(const RSF & concentration,
 {
 	return double(.5*sum(dot(electric_field,electric_field))
 	              //+concentration*log(concentration)
-		);
+	             );
 }
 
 
