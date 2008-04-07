@@ -129,10 +129,10 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source_h" ext="hpp" create="template" name="C/C++ Header" >
+      <type icon="source_h" ext="hpp" name="C/C++ Header" create="template" >
         <descr>A new empty header file for C or C++.</descr>
       </type>
-      <type icon="source_cpp" ext="cpp" create="template" name="C++ Source" >
+      <type icon="source_cpp" ext="cpp" name="C++ Source" create="template" >
         <descr>A new empty C++ file.</descr>
       </type>
     </filetypes>
@@ -147,10 +147,10 @@
       <used>false</used>
       <version>3</version>
       <includestyle>3</includestyle>
-      <root>/usr/lib/qt-3.3</root>
+      <root>/usr/lib/qt3</root>
       <designerintegration>EmbeddedKDevDesigner</designerintegration>
-      <qmake>/usr/lib/qt-3.3/bin/qmake</qmake>
-      <designer>/usr/lib/qt-3.3/bin/designer</designer>
+      <qmake>/usr/lib/qt3/bin/qmake</qmake>
+      <designer>/usr/lib/qt3/bin/designer</designer>
       <designerpluginpaths/>
     </qt>
     <references/>
