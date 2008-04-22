@@ -49,6 +49,12 @@ void concentration_move(RVF & electric_field,
 {
 	IV node2(node1);
 	node2[dir]+=1;
+	if(node2[0]==grid.nx())
+		node2[0]=0;
+	if(node2[1]==grid.ny())
+		node2[1]=0;
+	if(node2[2]==grid.nz())
+		node2[2]=0;
 	if ((grid.point_type()(node1[0],node1[1],node1[2])==1)
 	    &&(grid.point_type()(node2[0],node2[1],node2[2])==1))
 	{
@@ -307,6 +313,7 @@ Real functional(const RSF & concentration,
 		if (c!=0)
 			result+=-c*log(-c);
 	}
+	return result;
 	//return Real(.5*sum(dot(electric_field,electric_field))+sum(concentration*log(concentration)));
 }
 
