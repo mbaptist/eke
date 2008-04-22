@@ -106,7 +106,7 @@ void poisson_boltzmann(std::string run_name)
 	//Concentratrion
 //	blitz::TinyVector<RSF,N>(RSF(nx,ny,nz));
 	
-	
+#if 0	
 	//Verify charge neutrality
 	if (sum(density_colloid+density_counterions)>1e-10)
 	{
@@ -115,6 +115,7 @@ void poisson_boltzmann(std::string run_name)
 			<< "Aborting..." << endl;
 		exit(1);
 	}
+#endif	
 	
   //electric field
 	RVF electric_field(nx,ny,nz);
@@ -149,6 +150,8 @@ void distribute_colloidal_charge(RSF & density_colloid,
                                  Grid & grid,
                                  const Real & total_charge)
 {
+	
+#if 1
 	int nx(grid.nx());
 	int ny(grid.ny());
 	int nz(grid.nz());
@@ -177,6 +180,57 @@ void distribute_colloidal_charge(RSF & density_colloid,
 		grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
 	//cout << sum(charges) << endl;
 	}
+#endif
+	
+#if 0
+	int nx(grid.nx());
+	int ny(grid.ny());
+	int nz(grid.nz());
+	Real lx(grid.lx());
+	Real ly(grid.ly());
+	Real lz(grid.lz());
+	Real rs(grid.rs());
+	
+	grid.point_type()=0;
+	
+	int izero=nx/2;
+	int ileft=izero-nx/4;
+	int iright=izero+nx/4;
+	
+	cout << izero << endl;
+	cout << ileft << endl;
+	cout << iright << endl;
+	
+	for (int i=0;i<grid.nx();++i)
+		for (int j=0;j<grid.ny();++j)
+			for (int k=0;k<grid.nz();++k)
+				if((i>ileft)&&(i<iright))
+					grid.point_type()(i,j,k)=1;
+				else if ((i==ileft)||(i==iright))
+					grid.point_type()(i,j,k)=2;
+				else
+					grid.point_type()(i,j,k)=3;
+	
+	int np=2*ny*nz;
+	density_colloid=0;
+	Real delta_charge=total_charge/np;
+	
+	ISF density_count(nx,ny,nx);
+	
+	for (int i=0;i<grid.nx();++i)
+		for (int j=0;j<grid.ny();++j)
+			for (int k=0;k<grid.nz();++k)
+				if(grid.point_type()(i,j,k)==2)
+					density_count(i,j,k)+=1;
+	
+	density_colloid=density_count*delta_charge/grid.deltav();
+	
+	cout << sum(density_colloid) << endl;
+	
+#endif
+	
+	
+	
 }
 //Distribute ionic species	
 void distribute_ionic_species(RSF & density,
@@ -202,6 +256,6 @@ void distribute_ionic_species(RSF & density,
 			for (int k=0;k<grid.nz();++k)
 				if(grid.point_type()(i,j,k)==1)
 					density(i,j,k)+=delta_charge/grid.deltav();
-	//cout << sum(charges) << endl;
+	cout << sum(density) << endl;
 }
 
