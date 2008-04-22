@@ -34,6 +34,7 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
+typedef double Real;
 
 
 //// BLITZ ////
@@ -49,9 +50,9 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace blitz;
 
-BZ_DECLARE_FUNCTION_RET(norm,double)
-BZ_DECLARE_FUNCTION2_RET(dot,double)
-//BZ_DECLARE_FUNCTION_RET(log,double)
+BZ_DECLARE_FUNCTION_RET(norm,Real)
+BZ_DECLARE_FUNCTION2_RET(dot,Real)
+//BZ_DECLARE_FUNCTION_RET(log,Real)
 
 //Types
 //Integer vector
@@ -59,9 +60,9 @@ typedef blitz::TinyVector<int,3> IV;
 //Integer scalar field
 typedef blitz::Array<int,3> ISF;
 //Real vector
-typedef blitz::TinyVector<double,3> RV;
+typedef blitz::TinyVector<Real,3> RV;
 //Real scalar field
-typedef blitz::Array<double,3> RSF;
+typedef blitz::Array<Real,3> RSF;
 //Real vector field
 typedef blitz::Array<RV,3> RVF;
 

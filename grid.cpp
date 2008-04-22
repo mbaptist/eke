@@ -39,8 +39,8 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 //Ctor
 Grid::Grid(const int & _nx_, const int & _ny_,const int & _nz_,
-           const double & _lx_, const double & _ly_,const double & _lz_,
-           const double & _rs_):
+           const Real & _lx_, const Real & _ly_,const Real & _lz_,
+           const Real & _rs_):
 nx_(_nx_),ny_(_ny_),nz_(_nz_),
 lx_(_lx_),ly_(_ly_),lz_(_lz_),
 rs_(_rs_),
@@ -51,7 +51,8 @@ deltay_(ly_/ny_),
 deltaz_(lz_/nz_),
 deltasx_(deltay_*deltaz_),
 deltasy_(deltax_*deltaz_),
-deltasz_(deltay_*deltaz_)
+deltasz_(deltay_*deltaz_),
+deltav_(deltax_*deltay_*deltaz_)
 {
 	for (int i=0;i<nx_;++i)
 		for (int j=0;j<ny_;++j)

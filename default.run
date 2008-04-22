@@ -1,13 +1,37 @@
 #!/usr/bin/python
 
-#Grid parameters
-nx=32;
-ny=nx;
-nz=ny;
-#Geometry parameters
-lx=32.;
-ly=32.;
-lz=32.;
-rs=6.;
-#Physical parameters
-number_of_charges=100000;
+from math import pi,sqrt
+
+#Physical Parameters
+#Periodicity box
+lx=30.;
+ly=lx;
+lz=lx;
+#Colloidal sphere
+#radius
+rs=3.;
+#valence
+colloid_valence=60
+#bjerrum length (supplied according to the units)
+lb=1.3
+#Ionic species in the solvent
+#(1 for only counteriors, always odd)
+number_of_ionic_species=1
+#counteions
+ion_valence_0=1
+#salt ions
+#ion_valence_1=1
+#ion_valence_2=-1
+
+#Numerical Parameters
+#grid
+nx=32
+ny=nx
+nz=nx
+#tolerance
+eps=1e-16
+
+
+
+
+

@@ -121,3 +121,41 @@ PyObject * PyInputParser::pval(const string & item)
       exit(1);
     }
 }
+
+
+
+#if 0
+ //Save charges
+ofstream ofs("charges.dat");
+  //ofs << charge_density << endl;
+for (int n=0;n<charges.size();++n)
+	ofs << charges.data()[n] << endl;
+   //cout << charge_density << endl;
+
+
+  //Save initial electric field
+	ofstream ofs2("efi.dat");
+  //ofs2 << electric_field << endl;
+	for (int n=0;n<electric_field.size();++n)
+	{
+		for (int m=0;m<3;++m)
+			ofs2 << electric_field.data()[n][m] <<" ";
+		ofs2 << endl;
+	}
+
+
+
+  //write electric field after minimisation  
+	ofstream ofs3("ef.dat");
+	ofs3 << fixed << setprecision(16);
+  //ofs3 << electric_field << endl;
+	for (int n=0;n<electric_field.size();++n)
+	{
+		for (int m=0;m<3;++m)
+			ofs3 << electric_field.data()[n][m] <<" ";
+		ofs3 << endl;
+	}
+
+
+
+#endif

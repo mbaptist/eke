@@ -9,6 +9,8 @@ grid.cpp
 grid.hpp
 input.cpp
 input.hpp
+io.cpp
+io.hpp
 maggs.cpp
 maggs.hpp
 random.hpp

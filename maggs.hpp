@@ -70,9 +70,9 @@ void initialise_electric_field(RVF & electric_field,
 //// FUNCTIONALS ////
 
 //Functional for electrostitcs
-double functional(const RVF & electric_field);
+Real functional(const RVF & electric_field);
 //Functional for Poisson-Boltzmann
-double functional(const RSF & concentration,const RVF & electric_field);
+Real functional(const RSF & concentration,const RVF & electric_field);
 
 
 #endif

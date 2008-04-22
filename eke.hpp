@@ -35,14 +35,20 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 #define EKE_HPP
 
 
-#include "types.hpp"
 
+#include "types.hpp"
 #include "grid.hpp"
 
-void distribute_charges(RSF & charges, 
-                        Grid & grid,
-                        const double & total_charge);
+#include <string>
 
+void poisson_boltzmann(std::string run_name);
 
+void distribute_colloidal_charge(RSF & density_colloid,
+                                 Grid & grid,
+                                 const Real & total_charge);
+
+void distribute_ionic_species(RSF & density,
+                              Grid & grid,
+                              const Real & total_charge);
 
 #endif

@@ -56,8 +56,8 @@ using namespace std;
 PyObject *
 mhdc3dl_python_lss_run(PyObject *self, PyObject *args)
 {
-  double theta_min,theta_max;
-  std::complex<double> lambda_min,lambda_max;
+  Real theta_min,theta_max;
+  std::complex<Real> lambda_min,lambda_max;
   char * input_module_name;
   PyObject * dict;
   if (!PyArg_ParseTuple(args, "O", &dict ))
@@ -77,7 +77,7 @@ mhdc3dl_python_lss_run(PyObject *self, PyObject *args)
 PyObject *
 mhdc3dl_python_sss_run(PyObject *self, PyObject *args)
 {
-  double xp,eim;
+  Real xp,eim;
   char * input_module_name;
   PyObject * dict;
   if (!PyArg_ParseTuple(args, "O", &dict ))
