@@ -42,29 +42,31 @@ class Grid
 private:
   //Members
 	int nx_,ny_,nz_;
-	double lx_,ly_,lz_,rs_;
+	Real lx_,ly_,lz_,rs_;
 	RVF coordinates_;
 	ISF point_type_;
-	double deltax_,deltay_,deltaz_;
-	double deltasx_,deltasy_,deltasz_;
+	Real deltax_,deltay_,deltaz_;
+	Real deltasx_,deltasy_,deltasz_;
+	Real deltav_;
 public:
   //Accessors
 	int & nx(){return nx_;};
 	int & ny(){return ny_;};
 	int & nz(){return nz_;};
-	double & lx(){return lx_;};
-	double & ly(){return ly_;};
-	double & lz(){return lz_;};
-	double & rs(){return rs_;};
+	Real & lx(){return lx_;};
+	Real & ly(){return ly_;};
+	Real & lz(){return lz_;};
+	Real & rs(){return rs_;};
 	RVF & coordinates(){return coordinates_;};
 	ISF & point_type(){return point_type_;};
-	double & deltax(){return deltax_;};
-	double & deltay(){return deltay_;};
-	double & deltaz(){return deltaz_;};
-	double & deltasx(){return deltasx_;};
-	double & deltasy(){return deltasy_;};
-	double & deltasz(){return deltasz_;};	
-	double & deltas(const int & normal)
+	Real & deltax(){return deltax_;};
+	Real & deltay(){return deltay_;};
+	Real & deltaz(){return deltaz_;};
+	Real & deltasx(){return deltasx_;};
+	Real & deltasy(){return deltasy_;};
+	Real & deltasz(){return deltasz_;};
+	Real & deltav(){return deltav_;};
+	Real & deltas(const int & normal)
 	{
 		if (normal==1)
 			return deltasx_; 
@@ -77,19 +79,20 @@ public:
 	const int & nx() const {return nx_;};
 	const int & ny() const {return ny_;};
 	const int & nz() const {return nz_;};
-	const double & lx() const {return lx_;};
-	const double & ly() const {return ly_;};
-	const double & lz() const {return lz_;};
-	const double & rs() const {return rs_;};
+	const Real & lx() const {return lx_;};
+	const Real & ly() const {return ly_;};
+	const Real & lz() const {return lz_;};
+	const Real & rs() const {return rs_;};
 	const RVF & coordinates() const {return coordinates_;};
 	const ISF & point_type() const {return point_type_;};
-	const double & deltax() const {return deltax_;};
-	const double & deltay() const {return deltay_;};
-	const double & deltaz() const {return deltaz_;};
-	const double & deltasx() const {return deltasx_;};
-	const double & deltasy() const {return deltasy_;};
-	const double & deltasz() const {return deltasz_;};	
-	const double & deltas(const int & normal) const
+	const Real & deltax() const {return deltax_;};
+	const Real & deltay() const {return deltay_;};
+	const Real & deltaz() const {return deltaz_;};
+	const Real & deltasx() const {return deltasx_;};
+	const Real & deltasy() const {return deltasy_;};
+	const Real & deltasz() const {return deltasz_;};
+	const Real & deltav() const {return deltav_;};	
+	const Real & deltas(const int & normal) const
 	{
 		if (normal==1)
 			return deltasx_; 
@@ -98,11 +101,47 @@ public:
 		else
 			return deltasz_;
 	};
+	//Methods
+	const IV nearest_point_index(const RV & coord)
+	{
+		int ind_lip_x=static_cast<int>((coord[0]+.5*lx_)/(lx_/nx_));
+		int ind_lip_y=static_cast<int>((coord[1]+.5*ly_)/(ly_/ny_));
+		int ind_lip_z=static_cast<int>((coord[2]+.5*lz_)/(lz_/nz_));
+		
+		RV dist_vec=coord;
+		dist_vec-=coordinates_(ind_lip_x,ind_lip_y,ind_lip_z);
+		Real distance0=norm(dist_vec);
+		int ind_np_x=ind_lip_x;
+		int ind_np_y=ind_lip_y;
+		int ind_np_z=ind_lip_z;
+		for(int i=0;i<2;++i)
+			for(int j=0;j<2;++j)
+				for(int k=0;k<2;++k)
+				{
+					dist_vec=coord;
+					dist_vec-=coordinates_(ind_lip_x+i,ind_lip_y+j,ind_lip_z+k);
+					Real distance=norm(dist_vec); 
+					if(distance<distance0)
+					{
+						ind_np_x=ind_lip_x+i;
+						ind_np_y=ind_lip_y+j;
+						ind_np_z=ind_lip_z+k;
+						distance0=distance;
+					}
+				}
+		return IV(ind_np_x,ind_np_y,ind_np_z);
+	};
+	const RV nearest_point(const RV & coord)
+	{
+		IV inp=nearest_point_index(coord);
+		return RV(inp[0],inp[1],inp[2]);
+	};
+	
 public:
   //Ctors
 	Grid(const int & _nx_, const int & _ny_,const int & _nz_,
-	     const double & _lx_, const double & _ly_,const double & _lz_,
-	     const double & _rs_);
+	     const Real & _lx_, const Real & _ly_,const Real & _lz_,
+	     const Real & _rs_);
   //Dtor
 	~Grid();
 	
