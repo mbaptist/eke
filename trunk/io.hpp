@@ -47,6 +47,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 ///////////////////////////////////////////
 // Declaration of class PyInputParser
@@ -74,6 +75,7 @@ class PyInputParser
     bool parse_bool(const std::string & item);
     double parse_double(const std::string & item);
     std::string parse_string(const std::string & item);
+    std::vector<int> parse_vector_int(const std::string & item);
   private:
     //Forbidden constructors
     PyInputParser();//default

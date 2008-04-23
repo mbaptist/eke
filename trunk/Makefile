@@ -33,7 +33,7 @@ LIB=-lpython$(PYTHON_VERSION)
 IFLAGS = $(DEBUG) $(INCLUDE)
 FLAGS = $(DEBUG) $(LIB)
 
-OBJECTS = eke.o grid.o maggs.o input.o
+OBJECTS = eke.o grid.o maggs.o io.o
 
 ###############################################################################
 

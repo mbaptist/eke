@@ -40,25 +40,24 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 //// BASIC MOVES ////
 
-void charge_move(RVF & electric_field,
-                 RSF & charges,
-                 const Grid & grid,
-                 const IV & node, const int & dir);
+Real density_move(RVF & electric_field,
+		  RSF & charges,
+		  const Grid & grid,
+		  const IV & node, const int & dir);
 
-void loop_move(RVF & electric_field,
+Real loop_move(RVF & electric_field,
                const Grid & grid,
                const Loop & loop);
 
 //// LATTICE SWEEPS ////
 
-void sequential_sweep_concentration_moves(RVF & electric_field, 
+Real sequential_sweep_concentration_moves(RVF & electric_field, 
                                    RSF & charges,
                                    const Grid & grid);
 
-void sequential_sweep_loop_moves(RVF & electric_field, 
+Real sequential_sweep_loop_moves(RVF & electric_field, 
                                  const Grid & grid);
-void random_sweep_loop_moves(RVF & electric_field, 
-                             const Grid & grid);
+
 
 //// INITIALISATIONS ////
 
@@ -66,13 +65,6 @@ void initialise_electric_field(RVF & electric_field,
                                const RSF & charges,
                                const Grid & grid);
 
-
-//// FUNCTIONALS ////
-
-//Functional for electrostitcs
-Real functional(const RVF & electric_field);
-//Functional for Poisson-Boltzmann
-Real functional(const RSF & concentration,const RVF & electric_field);
 
 
 #endif
