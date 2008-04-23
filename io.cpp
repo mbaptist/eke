@@ -36,11 +36,12 @@
 
 #include <Python.h>
 
-#include "input.hpp"
+#include "io.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 
@@ -82,29 +83,39 @@ PyInputParser::~PyInputParser()
     }
 }
 
-int PyInputParser::parse_int(const string & item)
+int PyInputParser::parse_int(const std::string & item)
 {
   //val=PyInt_AsLong(PyDict_GetItem(dict,PyString_FromString(item.c_str())));
   return PyInt_AsLong(pval(item));
 }
-bool PyInputParser::parse_bool(const string & item)
+bool PyInputParser::parse_bool(const std::string & item)
 {
   //val=PyInt_AsLong(PyDict_GetItem(dict,PyString_FromString(item.c_str())));
   return PyInt_AsLong(pval(item));
 }
-double PyInputParser::parse_double(const string & item)
+double PyInputParser::parse_double(const std::string & item)
 {
   // val=PyFloat_AsDouble(PyDict_GetItem(dict,PyString_FromString(item.c_str())));
   return PyFloat_AsDouble(pval(item));
 }
 
-std::string PyInputParser::parse_string(const string & item)
+std::string PyInputParser::parse_string(const std::string & item)
 {
   //  val=PyString_AsString(PyDict_GetItem(dict,PyString_FromString(item.c_str())));
   return PyString_AsString(pval(item));
 }
 
-PyObject * PyInputParser::pval(const string & item)
+std::vector<int> PyInputParser::parse_vector_int(const std::string & item)
+{
+	vector<int> cppvector;
+	PyObject * pyvector;
+	pyvector=pval(item);
+	for(int n=0;n<PyList_Size(pyvector);++n)
+		cppvector.push_back(PyInt_AsLong(PyList_GetItem(pyvector,n)));
+	return cppvector;		
+}
+
+PyObject * PyInputParser::pval(const std::string & item)
 {
   PyObject * pyvalue=PyDict_GetItem(dict,PyString_FromString(item.c_str()));
   if (pyvalue!=0)

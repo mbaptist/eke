@@ -43,12 +43,9 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 void poisson_boltzmann(std::string run_name);
 
-void distribute_colloidal_charge(RSF & density_colloid,
-                                 Grid & grid,
-                                 const Real & total_charge);
-
-void distribute_ionic_species(RSF & density,
-                              Grid & grid,
-                              const Real & total_charge);
+//Distribute charges on the colloidal sphere
+void distribute_colloidal_charge(RSF & density_colloid,Grid & grid,const Real & colloid_valence);
+//Distribute ions of each ionic species	
+void distribute_ions(RSF & density,Grid & grid,const int & ion_number);
 
 #endif
