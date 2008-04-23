@@ -41,7 +41,8 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 //// BASIC MOVES ////
 
 Real density_move(RVF & electric_field,
-		  RSF & charges,
+		  RSF & density,
+		  const int & ion_valence,
 		  const Grid & grid,
 		  const IV & node, const int & dir);
 
@@ -52,8 +53,9 @@ Real loop_move(RVF & electric_field,
 //// LATTICE SWEEPS ////
 
 Real sequential_sweep_concentration_moves(RVF & electric_field, 
-                                   RSF & charges,
-                                   const Grid & grid);
+					  RSF & density,
+					  const int & ion_valence,
+					  const Grid & grid);
 
 Real sequential_sweep_loop_moves(RVF & electric_field, 
                                  const Grid & grid);

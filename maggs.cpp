@@ -44,6 +44,7 @@ using namespace ranlib;
 
 Real concentration_move(RVF & electric_field,
                         RSF & concentration,
+			const int & ion_valence,
                         const Grid & grid,
                         const IV & node1, const int & dir)
 {
@@ -75,7 +76,7 @@ Real concentration_move(RVF & electric_field,
       Real area=grid.deltas(dir);
       while(1)
 	{
-	  Real earg=(-e+deltac0/area)/area;
+	  Real earg=ion_valence*(-e+deltac0/area)/area;
 	  //cout << earg << endl;
 	  if (earg<0)
 	    deltac=(c1-c2*exp(earg))/(1+exp(earg));
@@ -87,8 +88,8 @@ Real concentration_move(RVF & electric_field,
 	}
       //Evaluate the change in the functional
       Real delta_func=-e*deltac/area+.5*pow(deltac/area,2)
-	+c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
-	-deltac*log(c1-deltac)+deltac*log(c2+deltac);
+	+(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
+	-deltac*log(c1-deltac)+deltac*log(c2+deltac))/ion_valence;
       //Accept the move if if minimises the functional
       if (delta_func<0)
 	{
@@ -146,7 +147,8 @@ Real loop_move(RVF & electric_field,
 
 
 Real sequential_sweep_concentration_moves(RVF & electric_field,
-                                          RSF & concentrations,
+                                          RSF & concentration,
+					  const int & ion_valence,
                                           const Grid & grid)
 {
   Real delta_func=0;
@@ -156,7 +158,7 @@ Real sequential_sweep_concentration_moves(RVF & electric_field,
 	for (int dir=0;dir<3;++dir)
 	  {
 	    //Perform the concentration move
-	    delta_func+=concentration_move(electric_field,concentrations,grid,IV(i,j,k),dir);
+	    delta_func+=concentration_move(electric_field,concentration,ion_valence,grid,IV(i,j,k),dir);
 	  }
   return delta_func;
 }
