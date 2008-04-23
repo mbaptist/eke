@@ -115,19 +115,19 @@ void poisson_boltzmann(std::string run_name)
 	
 #if 0	
   //Verify charge neutrality
-  if (sum(density_colloid+density_counterions)>1e-10)
+  double total_charge=sum(total_charge_density(density_colloid,ion_density,ion_valence))*grid.deltav();
+  if (total_charge>1e-10)
     {
       cout << "The total charge must be zero, instead of "
-	   << sum(density_colloid+ion_valence[0]*density_counterions) << ".\n"
+	   << total_charge << ".\n"
 	   << "Aborting..." << endl;
       exit(1);
     }
 #endif	
-  ion_density[0]*=ion_valence[0];
 	
   //electric field
   RVF electric_field(nx,ny,nz);
-  initialise_electric_field(electric_field,RSF(density_colloid+ion_density[0]),grid);
+  initialise_electric_field(electric_field,total_charge_density(density_colloid,ion_density,ion_valence),grid);
 	
   //Minimise
   int num_steps=0;
@@ -138,12 +138,12 @@ void poisson_boltzmann(std::string run_name)
       //Ion moves
       Real delta_func=0;
       for (int n=0;n<ion_valence.size();++n)
-	delta_func+=sequential_sweep_concentration_moves(electric_field,ion_density[n],grid);
+	delta_func+=sequential_sweep_concentration_moves(electric_field,ion_density[n],ion_valence[n],grid);
       //Field moves
       delta_func+=sequential_sweep_loop_moves(electric_field,grid);
 		
       cout << "Variation in functional: " << delta_func << endl;
-      if((delta_func<=0)&&(-delta_func<1e-16))
+      if((delta_func<=0)&&(-delta_func<1e-16)&&(num_steps>100))
 	break;
     }
 }
@@ -246,3 +246,15 @@ void distribute_ions(RSF & density,Grid & grid,const int & ion_number)
   //cout << sum(density) << endl;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+//Evaluate total charge density
+RSF total_charge_density(const RSF & density_colloid,
+			 const std::vector<RSF> & ion_density,
+			 const std::vector<int> & ion_valence)
+{
+  RSF tcd(density_colloid.copy());
+  for (int n=0;n<ion_valence.size();++n)
+    tcd+=RSF(ion_valence[n]*ion_density[n]);
+  return tcd;
+}
