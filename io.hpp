@@ -76,6 +76,7 @@ class PyInputParser
     double parse_double(const std::string & item);
     std::string parse_string(const std::string & item);
     std::vector<int> parse_vector_int(const std::string & item);
+    std::vector<double> parse_vector_double(const std::string & item);
   private:
     //Forbidden constructors
     PyInputParser();//default

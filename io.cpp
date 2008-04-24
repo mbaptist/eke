@@ -115,6 +115,16 @@ std::vector<int> PyInputParser::parse_vector_int(const std::string & item)
 	return cppvector;		
 }
 
+std::vector<double> PyInputParser::parse_vector_double(const std::string & item)
+{
+	vector<double> cppvector;
+	PyObject * pyvector;
+	pyvector=pval(item);
+	for(int n=0;n<PyList_Size(pyvector);++n)
+		cppvector.push_back(PyFloat_AsDouble(PyList_GetItem(pyvector,n)));
+	return cppvector;		
+}
+
 PyObject * PyInputParser::pval(const std::string & item)
 {
   PyObject * pyvalue=PyDict_GetItem(dict,PyString_FromString(item.c_str()));
