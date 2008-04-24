@@ -46,7 +46,7 @@ void poisson_boltzmann(std::string run_name);
 //Distribute charges on the colloidal sphere
 void distribute_colloidal_charge(RSF & density_colloid,Grid & grid,const Real & colloid_valence);
 //Distribute ions of each ionic species	
-void distribute_ions(RSF & density,Grid & grid,const int & ion_number);
+void distribute_ions(RSF & density,Grid & grid,const double & ion_number);
 
 //Evaluate total charge density
 RSF total_charge_density(const RSF & density_colloid,

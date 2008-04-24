@@ -34,7 +34,7 @@ ion_number=[fabs(colloid_valence/ion_valence[0])]
 
 #Numerical Parameters
 #grid
-nx=64
+nx=32
 ny=nx
 nz=nx
 #tolerance

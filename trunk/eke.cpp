@@ -73,22 +73,19 @@ void poisson_boltzmann(std::string run_name)
   double colloid_valence=input.parse_double("colloid_valence");
   //Ions
   vector<int> ion_valence=input.parse_vector_int("ion_valence");
-  vector<int> ion_number=input.parse_vector_int("ion_number");
+  vector<double> ion_number=input.parse_vector_double("ion_number");
   //Numerical parameters
   //Grid parameters
   int nx=input.parse_int("nx");
   int ny=input.parse_int("ny");
   int nz=input.parse_int("nz");
+  //Tolerance
+  double eps=input.parse_double("eps");
 	
   //Rescaling to non-dimensional units
   colloid_valence*=lb/rs;
-	
-  //E PRECISO VERIFICAR ESTE ESCALAMENTO
-  //O ION NUMBER TEM QUE SER DOUBLE
-  //for (int n=0;n<ion_number.size();++n)
-  //	ion_number[n]=static_cast<int>(ion_number[n]*lb/rs);
-  ion_number[0]=fabs(colloid_valence/ion_valence[0]);
-	
+  for (int n=0;n<ion_number.size();++n)
+  	ion_number[n]*=lb/rs;
   double k=sqrt(4.*M_PI*lb*colloid_valence/(lx*ly*lz));
   lx*=k;
   ly*=k;
@@ -111,8 +108,7 @@ void poisson_boltzmann(std::string run_name)
       ion_density[n]=0;
       distribute_ions(ion_density[n],grid,ion_number[n]);
     }
-	
-	
+		
 #if 0	
   //Verify charge neutrality
   double total_charge=sum(total_charge_density(density_colloid,ion_density,ion_valence))*grid.deltav();
@@ -143,7 +139,7 @@ void poisson_boltzmann(std::string run_name)
       delta_func+=sequential_sweep_loop_moves(electric_field,grid);
 		
       cout << "Variation in functional: " << delta_func << endl;
-      if((delta_func<=0)&&(-delta_func<1e-16)&&(num_steps>100))
+      if((fabs(delta_func)<eps)&&(num_steps>100))
 	break;
     }
 }
@@ -221,7 +217,7 @@ void distribute_colloidal_charge(RSF & density_colloid,Grid & grid,const Real & 
 #endif
 }
 //Distribute ions of each ionic species	
-void distribute_ions(RSF & density,Grid & grid,const int & ion_number)
+void distribute_ions(RSF & density,Grid & grid,const double & ion_number)
 {
   int nx(grid.nx());
   int ny(grid.ny());
