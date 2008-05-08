@@ -5,8 +5,8 @@ from math import pi,sqrt,fabs
 #Physical Parameters
 #Periodicity box
 lx=30.;
-ly=lx;
-lz=lx;
+ly=30.;
+lz=30.;
 #Colloidal sphere
 #radius
 rs=3.;

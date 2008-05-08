@@ -68,9 +68,9 @@ public:
 	Real & deltav(){return deltav_;};
 	Real & deltas(const int & normal)
 	{
-		if (normal==1)
+		if (normal==0)
 			return deltasx_; 
-		else if (normal==2)
+		else if (normal==1)
 			return deltasy_;
 		else
 			return deltasz_;
@@ -94,9 +94,9 @@ public:
 	const Real & deltav() const {return deltav_;};	
 	const Real & deltas(const int & normal) const
 	{
-		if (normal==1)
+		if (normal==0)
 			return deltasx_; 
-		else if (normal==2)
+		else if (normal==1)
 			return deltasy_;
 		else
 			return deltasz_;

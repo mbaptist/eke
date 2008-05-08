@@ -44,7 +44,7 @@ using namespace ranlib;
 
 Real concentration_move(RVF & electric_field,
                         RSF & concentration,
-			const int & ion_valence,
+                        const int & ion_valence,
                         const Grid & grid,
                         const IV & node1, const int & dir)
 {
@@ -65,42 +65,69 @@ Real concentration_move(RVF & electric_field,
       ||(grid.point_type()(node2[0],node2[1],node2[2])!=1))
     return 0;
   else
+  {
+    Real & c1 = concentration(node1[0],node1[1],node1[2]);
+    Real & c2 = concentration(node2[0],node2[1],node2[2]);
+    Real & e = electric_field(node1[0],node1[1],node1[2])[dir];
+    //Check if concentration is negative
+    if((c1<0)||(c2<0))
     {
-      Real & c1 = concentration(node1[0],node1[1],node1[2]);
-      Real & c2 = concentration(node2[0],node2[1],node2[2]);
-      Real & e = electric_field(node1[0],node1[1],node1[2])[dir];
-      //Optimal concentration change
-      //solve for the optimal concentration change with fixed point iterations
-      Real deltac;
-      Real deltac0=c1;
-      Real area=grid.deltas(dir);
-      while(1)
-	{
-	  Real earg=ion_valence*(-e+deltac0/area)/area;
-	  //cout << earg << endl;
-	  if (earg<0)
-	    deltac=(c1-c2*exp(earg))/(1+exp(earg));
-	  else
-	    deltac=(c1*exp(-earg)-c2)/(exp(-earg)+1);
-	  if(fabs(deltac-deltac0)<.5e-16)
-	    break;
-	  deltac0=deltac;
-	}
-      //Evaluate the change in the functional
-      Real delta_func=-e*deltac/area+.5*pow(deltac/area,2)
-	+(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
-	-deltac*log(c1-deltac)+deltac*log(c2+deltac))/ion_valence;
-      //Accept the move if if minimises the functional
-      if (delta_func<0)
-	{
-	  e-=deltac/area;
-	  c1-=deltac;
-	  c2+=deltac;
-	  return delta_func;
-	}
-      else
-	return 0;
+      cout << "Concentrations cannot be negative. Aborting..." << endl;
+      exit(1);
     }
+    Real deltas=grid.deltas(dir);
+
+
+#if 0
+    //Optimal concentration change
+    //solve for the optimal concentration change with fixed point iterations
+    Real deltac;
+    Real deltac0=(-c2+c1)/2.;
+    while(1)
+    {
+      Real earg=(-e+deltac0/deltas)/deltas;
+      Real exp_earg=exp(-fabs(earg));
+      //cout << earg << " " << exp_earg << endl;
+      if(exp_earg<1e-16) 
+      {
+        deltac=c1;
+        break;
+      }
+      else if (earg<0)
+        deltac=(c1-c2*exp_earg)/(1+exp_earg);
+      else if(earg>0)
+        deltac=(c1*exp_earg-c2)/(exp_earg+1);
+      else
+        deltac=(c1-c2)/2.;
+      if(fabs(deltac-deltac0)<.5e-16)
+        break;
+      deltac0=deltac;
+    }
+#endif
+    
+    
+#if 1
+    //Change the concentration by a random amount
+    //in the interval (-c2,c1)
+    UniformOpen<Real> rg;
+    Real deltac=-c2+rg.random()*(c2+c1);
+#endif
+      //Evaluate the change in the functional
+    Real delta_func=-e*deltac/deltas+.5*pow(deltac/deltas,2)
+      +(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
+        -deltac*log(c1-deltac)+deltac*log(c2+deltac));
+      //cout << delta_func << endl;
+//Accept the move if if minimises the functional
+    if (delta_func<0)
+    {
+      e-=deltac/deltas;
+      c1-=deltac;
+      c2+=deltac;
+      return delta_func;
+    }
+    else
+      return 0;
+  }
 }
 
 
@@ -125,18 +152,18 @@ Real loop_move(RVF & electric_field,
   //This is valid both for electrostatics and Poisson-Boltzmann
   //It is characteristic of loop moves
   Real delta_func=(e1p*e1p+e2p*e2p+e3p*e3p+e4p*e4p
-		   -e1*e1-e2*e2-e3*e3-e4*e4);
+                   -e1*e1-e2*e2-e3*e3-e4*e4);
   //cout << "Dfunc=" << delta_func << endl;
   //Accept/reject move
   if (delta_func<0)
-    {
-      e1=e1p;
-      e2=e2p;
-      e3=e3p;
-      e4=e4p;
-      return delta_func;
+  {
+    e1=e1p;
+    e2=e2p;
+    e3=e3p;
+    e4=e4p;
+    return delta_func;
       //cout << "Circulation: " << e1+e2-e3-e4 << endl;
-    }
+  }
   else 
     return 0;
 };
@@ -148,18 +175,18 @@ Real loop_move(RVF & electric_field,
 
 Real sequential_sweep_concentration_moves(RVF & electric_field,
                                           RSF & concentration,
-					  const int & ion_valence,
+                                          const int & ion_valence,
                                           const Grid & grid)
 {
   Real delta_func=0;
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k)
-	for (int dir=0;dir<3;++dir)
-	  {
+        for (int dir=0;dir<3;++dir)
+        {
 	    //Perform the concentration move
-	    delta_func+=concentration_move(electric_field,concentration,ion_valence,grid,IV(i,j,k),dir);
-	  }
+          delta_func+=concentration_move(electric_field,concentration,ion_valence,grid,IV(i,j,k),dir);
+        }
   return delta_func;
 }
 
@@ -171,13 +198,13 @@ Real sequential_sweep_loop_moves(RVF & electric_field,
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k)
-	for (int loop_number=0;loop_number<3;++loop_number)
-	  {
+        for (int loop_number=0;loop_number<3;++loop_number)
+        {
 	    //Create the loop
-	    Loop loop(blitz::TinyVector<int,3>(i,j,k),loop_number,grid);
+          Loop loop(blitz::TinyVector<int,3>(i,j,k),loop_number,grid);
 	    //Perform the loop move
-	    delta_func=loop_move(electric_field,grid,loop);
-	  }
+          delta_func=loop_move(electric_field,grid,loop);
+        }
   return delta_func;
 }
 
@@ -204,13 +231,13 @@ void initialise_electric_field(RVF & electric_field,
     for(int k=0;k<nz;++k)
       electric_field[0](0,j,k)=mean_density*dv/ds;
   for(int i=1;i<nx-1;++i)
-    {
-      mean_density=mean(density(i,Range::all(),Range::all()));
-      density(i,Range::all(),Range::all())-=mean_density;
-      for(int j=0;j<ny;++j)
-	for(int k=0;k<nz;++k)
-	  electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density*dv/ds;;
-    }
+  {
+    mean_density=mean(density(i,Range::all(),Range::all()));
+    density(i,Range::all(),Range::all())-=mean_density;
+    for(int j=0;j<ny;++j)
+      for(int k=0;k<nz;++k)
+        electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density*dv/ds;;
+  }
   mean_density=mean(density(nx-1,Range::all(),Range::all()));
   density(nx-1,Range::all(),Range::all())-=mean_density;
   for(int j=0;j<ny;++j)
@@ -219,71 +246,80 @@ void initialise_electric_field(RVF & electric_field,
   //Ey
   ds=grid.deltasy();
   for(int i=0;i<nx;++i)
+  {
+    mean_density=mean(density(i,0,Range::all()));
+    density(i,0,Range::all())-=mean_density;
+    for(int k=0;k<nz;++k)
+      electric_field[1](i,0,k)=mean_density*dv/ds;
+    for(int j=1;j<ny-1;++j)
     {
-      mean_density=mean(density(i,0,Range::all()));
-      density(i,0,Range::all())-=mean_density;
+      mean_density=mean(density(i,j,Range::all()));
+      density(i,j,Range::all())-=mean_density;
       for(int k=0;k<nz;++k)
-	electric_field[1](i,0,k)=mean_density*dv/ds;
-      for(int j=1;j<ny-1;++j)
-	{
-	  mean_density=mean(density(i,j,Range::all()));
-	  density(i,j,Range::all())-=mean_density;
-	  for(int k=0;k<nz;++k)
-	    electric_field[1](i,j,k)=electric_field[1](i,j-1,k)+mean_density*dv/ds;;
-	}
-      mean_density=mean(density(i,ny-1,Range::all()));
-      density(i,ny-1,Range::all())-=mean_density;
-      for(int k=0;k<nz;++k)
-	electric_field[1](i,ny-1,k)=0.;
+        electric_field[1](i,j,k)=electric_field[1](i,j-1,k)+mean_density*dv/ds;;
     }
+    mean_density=mean(density(i,ny-1,Range::all()));
+    density(i,ny-1,Range::all())-=mean_density;
+    for(int k=0;k<nz;++k)
+      electric_field[1](i,ny-1,k)=0.;
+  }
   //Ez
   ds=grid.deltasz();
   for(int i=0;i<nx;++i)
     for(int j=0;j<ny;++j)
-      {
-	electric_field[2](i,j,0)=density(i,j,0)*dv/ds;
-	for(int k=1;k<nz-1;++k)
-	  electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+density(i,j,k)*dv/ds;
-	electric_field[2](i,j,nz-1)=0;
-      }
-	
+    {
+      electric_field[2](i,j,0)=density(i,j,0)*dv/ds;
+      for(int k=1;k<nz-1;++k)
+        electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+density(i,j,k)*dv/ds;
+      electric_field[2](i,j,nz-1)=0;
+    }
+  
 #if 1
   //Test for div E = \rho
   for(int i=0;i<nx;++i)
     for(int j=0;j<ny;++j)
       for(int k=0;k<nz;++k)
-	{
-	  int n1,n2;
-	  n1=i-1;
-	  if (n1==-1)
-	    n1=nx-1;
-	  n2=i;
-	  Real divx=electric_field[0](n2,j,k)-electric_field[0](n1,j,k);
-	  divx/=grid.deltax();
-	  n1=j-1;
-	  if (n1==-1)
-	    n1=ny-1;
-	  n2=j;
-	  Real divy=electric_field[1](i,n2,k)-electric_field[1](i,n1,k);
-	  divy/=grid.deltay();
-	  n1=k-1;
-	  if (n1==-1)
-	    n1=nz-1;
-	  n2=k;
-	  Real divz=electric_field[2](i,j,n2)-electric_field[2](i,j,n1);
-	  divz/=grid.deltaz();
-	  Real div=divx+divy+divz;
-	  if (fabs(div-total_density(i,j,k))>.5e-10)
-	    {
-	      cout << i << " " << j << " " << k << " " 
-		   << divx << " " << divy <<" " << divz << "\n " 
-		   << div << " " << total_density(i,j,k) << endl;
-	      exit(1);
-	    }
-	}
+      {
+        int n1,n2;
+        n1=i-1;
+        if (n1==-1)
+          n1=nx-1;
+        n2=i;
+        Real divx=electric_field[0](n2,j,k)-electric_field[0](n1,j,k);
+        divx/=grid.deltax();
+        n1=j-1;
+        if (n1==-1)
+          n1=ny-1;
+        n2=j;
+        Real divy=electric_field[1](i,n2,k)-electric_field[1](i,n1,k);
+        divy/=grid.deltay();
+        n1=k-1;
+        if (n1==-1)
+          n1=nz-1;
+        n2=k;
+        Real divz=electric_field[2](i,j,n2)-electric_field[2](i,j,n1);
+        divz/=grid.deltaz();
+        Real div=divx+divy+divz;
+        if (fabs(div-total_density(i,j,k))>.5e-5)
+        {
+          cout << i << " " << j << " " << k << " " 
+            << divx << " " << divy <<" " << divz << "\n " 
+            << div << " " << total_density(i,j,k) << endl;
+          exit(1);
+        }
+      }
 #endif 
-	
-	
+  
+  
 }
 
 
+//// FUNCTIONAL ////
+
+Real functional(RVF & electric_field,std::vector<RSF> ion_concentration,std::vector<int> ion_valence)
+{
+  Real func=.5*sum(dot(electric_field,electric_field));
+  for (int n=0;n<ion_valence.size();++n)
+    func+=sum(where(ion_concentration[n]>0,ion_concentration[n]*log(ion_concentration[n]),0))/ion_valence[n];
+  return func;
+}
