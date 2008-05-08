@@ -38,6 +38,8 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "types.hpp"
 
+#include <vector>
+
 //// BASIC MOVES ////
 
 Real density_move(RVF & electric_field,
@@ -67,6 +69,8 @@ void initialise_electric_field(RVF & electric_field,
                                const RSF & charges,
                                const Grid & grid);
 
+//// FUNCTIONAL ////
 
+Real functional(RVF & electric_field,std::vector<RSF> ion_concentration,std::vector<int> ion_valence);
 
 #endif
