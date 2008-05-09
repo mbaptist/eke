@@ -40,9 +40,12 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <vector>
 using namespace std;
+
+#include "grid.hpp"
 
 
 ///////////////////////////////////////////
@@ -145,38 +148,44 @@ PyObject * PyInputParser::pval(const std::string & item)
 
 
 
+
 #if 0
- //Save charges
-ofstream ofs("charges.dat");
-  //ofs << charge_density << endl;
-for (int n=0;n<charges.size();++n)
-	ofs << charges.data()[n] << endl;
-   //cout << charge_density << endl;
 
+void vtkSave(const std::string & filename,const RSF & field,const std::string & fieldname,const Grid & grid)
+{
+  ofstream ofs((filename+".vtk").c_str());
+  ofs << "# vtk DataFile Version 2.0 \n"
+    << ". \n"
+    << "ASCII \n"
+    << "DATASET STRUCTURED_POINTS \n"
+    << "DIMENSIONS " << field.shape()[0] << " " << field.shape()[1] << " " << field.shape()[2] << "\n"
+    << "ORIGIN 0 0 0 \n "
+    << "SPACING " << grid.deltax() << " " << grid.deltay() << " " grid.deltaz() << "\n"
+    << "POINT_DATA " << field.size() << "\n"
+    << "SCALARS " << fieldname.c_str() << " float\n"
+    << "LOOKUP_TABLE default" << endl;
+  for (int n=0;n<field.size();++n)
+    ofs << field.data()[n] << endl;
+}
 
-  //Save initial electric field
-	ofstream ofs2("efi.dat");
-  //ofs2 << electric_field << endl;
-	for (int n=0;n<electric_field.size();++n)
-	{
-		for (int m=0;m<3;++m)
-			ofs2 << electric_field.data()[n][m] <<" ";
-		ofs2 << endl;
-	}
-
-
-
-  //write electric field after minimisation  
-	ofstream ofs3("ef.dat");
-	ofs3 << fixed << setprecision(16);
-  //ofs3 << electric_field << endl;
-	for (int n=0;n<electric_field.size();++n)
-	{
-		for (int m=0;m<3;++m)
-			ofs3 << electric_field.data()[n][m] <<" ";
-		ofs3 << endl;
-	}
-
-
+void vtkSave(const std::string & filename,const RVF & field,const std::string & fieldname,const Grid & grid)
+{
+  ofstream ofs((filename+".vtk").c_str());
+  ofs << "# vtk DataFile Version 2.0 \n"
+    << ". \n"
+    << "ASCII \n"
+    << "DATASET STRUCTURED_POINTS \n"
+    << "DIMENSIONS " << field.shape()[0] << " " << field.shape()[1] << " " << field.shape()[2] << "\n"
+    << "ORIGIN 0 0 0 \n "
+    << "SPACING " << grid.deltax() << " " << grid.deltay() << " " grid.deltaz() << "\n"
+    << "POINT_DATA " << field.size() << "\n"
+    << "VECTORS " << fieldname.c_str() << " float" << endl;
+  for (int n=0;n<field.size();++n)
+    {
+      for (int m=0;m<3;++m)
+        ofs << field.data()[n][m] <<" ";
+      ofs << endl;
+    }
+}
 
 #endif

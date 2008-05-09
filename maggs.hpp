@@ -73,4 +73,6 @@ void initialise_electric_field(RVF & electric_field,
 
 Real functional(RVF & electric_field,std::vector<RSF> ion_concentration,std::vector<int> ion_valence);
 
+Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltas);
+
 #endif

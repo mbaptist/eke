@@ -156,7 +156,7 @@ void poisson_boltzmann(std::string run_name)
 //Distribute charges on the colloidal sphere
 void distribute_colloidal_charge(RSF & density_colloid,Grid & grid,const Real & colloid_valence)
 {
-#if 0
+#if 1
   int nx(grid.nx());
   int ny(grid.ny());
   int nz(grid.nz());
@@ -190,7 +190,7 @@ void distribute_colloidal_charge(RSF & density_colloid,Grid & grid,const Real & 
   //For testing
   //Redifines the point types so that the ionic species are
   //distributed inside
-#if 1
+#if 0
   int nx(grid.nx());
   int ny(grid.ny());
   int nz(grid.nz());

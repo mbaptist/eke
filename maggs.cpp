@@ -77,28 +77,38 @@ Real concentration_move(RVF & electric_field,
     }
     Real deltas=grid.deltas(dir);
 
-
+#if 1
+    //Optimal concentration change
+    //solve for the optimal concentration change with successive bisections
+    Real deltac;
+    Real a=-c2;
+    Real b=c1;
+    Real fa=d_deltafunc_d_deltac(a,c1,c2,e,deltas);
+    Real fb=d_deltafunc_d_deltac(b,c1,c2,e,deltas);
+    while(1)
+    {
+      Real c=.5*(a+b);
+      Real fc=d_deltafunc_d_deltac(c,c1,c2,e,deltas);
+      if(fa*fc<0)
+        b=c;
+      else
+        a=c;
+      if(b-a<1e-12)
+      {
+        deltac=c;
+        break;
+      }
+    }
+#endif
+    
 #if 0
     //Optimal concentration change
     //solve for the optimal concentration change with fixed point iterations
-    Real deltac;
-    Real deltac0=(-c2+c1)/2.;
+    //Real deltac;
+    Real deltac0=deltac;
     while(1)
     {
-      Real earg=(-e+deltac0/deltas)/deltas;
-      Real exp_earg=exp(-fabs(earg));
-      //cout << earg << " " << exp_earg << endl;
-      if(exp_earg<1e-16) 
-      {
-        deltac=c1;
-        break;
-      }
-      else if (earg<0)
-        deltac=(c1-c2*exp_earg)/(1+exp_earg);
-      else if(earg>0)
-        deltac=(c1*exp_earg-c2)/(exp_earg+1);
-      else
-        deltac=(c1-c2)/2.;
+      deltac=deltac0-d_deltafunc_d_deltac(deltac0,c1,c2,e,deltas);
       if(fabs(deltac-deltac0)<.5e-16)
         break;
       deltac0=deltac;
@@ -106,7 +116,7 @@ Real concentration_move(RVF & electric_field,
 #endif
     
     
-#if 1
+#if 0
     //Change the concentration by a random amount
     //in the interval (-c2,c1)
     UniformOpen<Real> rg;
@@ -323,3 +333,19 @@ Real functional(RVF & electric_field,std::vector<RSF> ion_concentration,std::vec
     func+=sum(where(ion_concentration[n]>0,ion_concentration[n]*log(ion_concentration[n]),0))/ion_valence[n];
   return func;
 }
+
+
+Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltas)
+{
+  Real earg=(-e+deltac/deltas)/deltas;
+  Real exp_earg=exp(-fabs(earg));
+  //cout << earg << " " << exp_earg << endl;
+  if (earg<0)
+    return deltac-(c1-c2*exp_earg)/(1+exp_earg);
+  else if(earg>0)
+    return deltac-(c1*exp_earg-c2)/(exp_earg+1);
+  else
+    return deltac-(c1-c2)/2.;
+}
+
+
