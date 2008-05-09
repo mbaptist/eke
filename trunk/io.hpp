@@ -46,8 +46,11 @@
 #include <Python.h>
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
+
+#include "grid.hpp"
 
 ///////////////////////////////////////////
 // Declaration of class PyInputParser
@@ -83,7 +86,9 @@ class PyInputParser
     PyInputParser(const PyInputParser &);//copy
   };
 
+void vtkSave(const std::string & filename,const RSF & field,const std::string & fieldname,const Grid & grid);
 
+void vtkSave(const std::string & filename,const RVF & field,const std::string & fieldname,const Grid & grid);
 
 
 #endif
