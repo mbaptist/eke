@@ -141,7 +141,7 @@ void poisson_boltzmann(std::string run_name)
       cout << "Variation in functional: " << delta_func << endl;
       func+=delta_func;
 	    //cout << func << " " << delta_func/func << endl;
-      if(fabs(delta_func)<eps)
+      if(fabs(delta_func)<1e-15)
 	break;
     }
 	

@@ -76,7 +76,6 @@ Real concentration_move(RVF & electric_field,
       exit(1);
     }
     Real deltas=grid.deltas(dir);
-
 #if 1
     //Optimal concentration change
     //solve for the optimal concentration change with successive bisections
@@ -100,7 +99,6 @@ Real concentration_move(RVF & electric_field,
       }
     }
 #endif
-    
 #if 0
     //Optimal concentration change
     //solve for the optimal concentration change with fixed point iterations
@@ -114,8 +112,6 @@ Real concentration_move(RVF & electric_field,
       deltac0=deltac;
     }
 #endif
-    
-    
 #if 0
     //Change the concentration by a random amount
     //in the interval (-c2,c1)
@@ -213,7 +209,7 @@ Real sequential_sweep_loop_moves(RVF & electric_field,
 	    //Create the loop
           Loop loop(blitz::TinyVector<int,3>(i,j,k),loop_number,grid);
 	    //Perform the loop move
-          delta_func=loop_move(electric_field,grid,loop);
+          delta_func+=loop_move(electric_field,grid,loop);
         }
   return delta_func;
 }

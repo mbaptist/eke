@@ -149,7 +149,7 @@ PyObject * PyInputParser::pval(const std::string & item)
 
 
 
-#if 0
+#if 1
 
 void vtkSave(const std::string & filename,const RSF & field,const std::string & fieldname,const Grid & grid)
 {
@@ -160,7 +160,7 @@ void vtkSave(const std::string & filename,const RSF & field,const std::string & 
     << "DATASET STRUCTURED_POINTS \n"
     << "DIMENSIONS " << field.shape()[0] << " " << field.shape()[1] << " " << field.shape()[2] << "\n"
     << "ORIGIN 0 0 0 \n "
-    << "SPACING " << grid.deltax() << " " << grid.deltay() << " " grid.deltaz() << "\n"
+    << "SPACING " << grid.deltax() << " " << grid.deltay() << " " << grid.deltaz() << "\n"
     << "POINT_DATA " << field.size() << "\n"
     << "SCALARS " << fieldname.c_str() << " float\n"
     << "LOOKUP_TABLE default" << endl;
@@ -177,7 +177,7 @@ void vtkSave(const std::string & filename,const RVF & field,const std::string & 
     << "DATASET STRUCTURED_POINTS \n"
     << "DIMENSIONS " << field.shape()[0] << " " << field.shape()[1] << " " << field.shape()[2] << "\n"
     << "ORIGIN 0 0 0 \n "
-    << "SPACING " << grid.deltax() << " " << grid.deltay() << " " grid.deltaz() << "\n"
+    << "SPACING " << grid.deltax() << " " << grid.deltay() << " " << grid.deltaz() << "\n"
     << "POINT_DATA " << field.size() << "\n"
     << "VECTORS " << fieldname.c_str() << " float" << endl;
   for (int n=0;n<field.size();++n)
