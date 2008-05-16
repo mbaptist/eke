@@ -76,25 +76,27 @@ Real concentration_move(RVF & electric_field,
       exit(1);
     }
     Real deltas=grid.deltas(dir);
+    Real deltac;
+    Real deltae;
 #if 1
     //Optimal concentration change
     //solve for the optimal concentration change with successive bisections
-    Real deltac;
     Real a=-c2;
+    Real fa=d_deltafunc_d_deltac(a,c1,c2,e,-ion_valence*a/deltas);
     Real b=c1;
-    Real fa=d_deltafunc_d_deltac(a,c1,c2,e,deltas);
-    Real fb=d_deltafunc_d_deltac(b,c1,c2,e,deltas);
+        Real fb=d_deltafunc_d_deltac(b,c1,c2,e,-ion_valence*b/deltas);
     while(1)
     {
       Real c=.5*(a+b);
-      Real fc=d_deltafunc_d_deltac(c,c1,c2,e,deltas);
+      Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*c/deltas);
       if(fa*fc<0)
         b=c;
       else
         a=c;
-      if(b-a<1e-16)
+      if(b-a<1e-10)
       {
         deltac=c;
+        deltae=-ion_valence*deltac/deltas;
         //cout << deltac << endl;
         break;
       }
@@ -103,29 +105,30 @@ Real concentration_move(RVF & electric_field,
 #if 0
     //Optimal concentration change
     //solve for the optimal concentration change with fixed point iterations
-    //Real deltac;
     Real deltac0=deltac;
     while(1)
     {
-      deltac=deltac0-d_deltafunc_d_deltac(deltac0,c1,c2,e,deltas);
+      deltac=deltac0-d_deltafunc_d_deltac(deltac0,c1,c2,e,-ion_valence*deltac/deltas);
       if(fabs(deltac-deltac0)<.5e-16)
         break;
       deltac0=deltac;
     }
+    deltae=-ion_valence*deltac/deltas;
 #endif
 #if 0
     //Change the concentration by a random amount
     //in the interval (-c2,c1)
     UniformOpen<Real> rg;
-    Real deltac=-c2+rg.random()*(c2+c1);
+    deltac=-c2+rg.random()*(c2+c1);
+    deltae=-ion_valence*deltac/deltas;
 #endif
       //Evaluate the change in the functional
-    Real delta_func=deltafunc(deltac,c1,c2,e,deltas);
+    Real delta_func=deltafunc(deltac,c1,c2,e,deltae);
       //cout << delta_func << endl;
 //Accept the move if if minimises the functional
     if (delta_func<0)
     {
-      e-=deltac/deltas;
+      e+=deltae;
       c1-=deltac;
       c2+=deltac;
       return delta_func;
@@ -321,24 +324,24 @@ void initialise_electric_field(RVF & electric_field,
 
 //// FUNCTIONAL ////
 
-Real functional(RVF & electric_field,std::vector<RSF> ion_concentration,std::vector<int> ion_valence)
+Real functional(RVF & electric_field,std::vector<RSF> ion_concentration)
 {
   Real func=.5*sum(dot(electric_field,electric_field));
-  for (int n=0;n<ion_valence.size();++n)
-    func-=sum(where(ion_concentration[n]>0,ion_concentration[n]*log(ion_concentration[n]),0));
+  for (int n=0;n<ion_concentration.size();++n)
+    func+=sum(where(ion_concentration[n]>0,ion_concentration[n]*log(ion_concentration[n]),0));
   return func;
 }
 
 
-Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltas)
+Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
 {
-  return (-e*deltac/deltas+.5*deltac*deltac)/deltas+(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
+  return (e+.5*deltae)*deltae+(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
     -deltac*log(c1-deltac)+deltac*log(c2+deltac));
 }
 
-Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltas)
+Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
 {
-  Real earg=(-e+deltac/deltas)/deltas;
+  Real earg=(e+deltae)*deltae/deltac;
   Real exp_earg=exp(-fabs(earg));
   //cout << earg << " " << exp_earg << endl;
   if (earg<0)

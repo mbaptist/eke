@@ -4,9 +4,9 @@ from math import pi,sqrt,fabs
 
 #Physical Parameters
 #Periodicity box
-lx=40.;
-ly=40.;
-lz=40.;
+lx=30.;
+ly=30.;
+lz=30.;
 #Colloidal sphere
 #radius
 rs=3.;
@@ -34,7 +34,7 @@ ion_number=[fabs(colloid_valence/ion_valence[0])]
 
 #Numerical Parameters
 #grid
-nx=32
+nx=64
 ny=nx
 nz=nx
 #tolerance

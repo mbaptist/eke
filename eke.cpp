@@ -109,27 +109,23 @@ void poisson_boltzmann(std::string run_name)
       distribute_ions(ion_density[n],grid,ion_number[n]);
     }
 		
-#if 0
   //Verify charge neutrality
-  double total_charge=sum(total_charge_density(density_colloid,ion_density,ion_valence))*grid.deltav();
-  if (total_charge>1e-16)
+  double total_charge=sum(total_charge_density(colloid_charge_density,ion_density,ion_valence))*grid.deltav();
+  if (total_charge>1e-10)
     {
       cout << "The total charge must be zero, instead of "
 	   << total_charge << ".\n"
 	   << "Aborting..." << endl;
       exit(1);
     }
-#endif	
-	
+
   //electric field
   RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,total_charge_density(colloid_charge_density,ion_density,ion_valence),grid);
 	
   //Minimise
   int num_steps=0;
-  Real func=functional(electric_field,ion_density,ion_valence);
-  
-# if 1
+  Real func=functional(electric_field,ion_density);
   while(1)
     {
       ++num_steps;
@@ -143,48 +139,9 @@ void poisson_boltzmann(std::string run_name)
       cout << "Variation in functional: " << delta_func << endl;
       func+=delta_func;
 	    //cout << func << " " << delta_func/func << endl;
-      if(fabs(delta_func)<1e-12)
+      if(fabs(delta_func)<1e-10)
 	break;
     }
-#endif
-  
-  
-#if 0
-  Real func0=func;
-  while(1)
-  {
-    ++num_steps;
-    cout << "Minimisation step: " << num_steps << endl;
-    while(1)
-    {
-      Real delta_func=0;
-      delta_func+=sequential_sweep_loop_moves(electric_field,grid);
-      func+=delta_func;
-      cout << "Variation in functional: " << delta_func << endl;
-      if(fabs(delta_func)<1e-3)
-        break;
-    }
-    while(1)
-    {
-      Real delta_func=0;
-      for (int n=0;n<ion_valence.size();++n)
-        delta_func+=sequential_sweep_concentration_moves(electric_field,ion_density[n],ion_valence[n],grid);
-      func+=delta_func;
-      cout << "Variation in functional: " << delta_func << endl;
-      if(fabs(delta_func)<1e-3)
-        break;
-    }
-    if(fabs(func-func0)<1e-12)
-      break;
-    func0=func;
-  }
-#endif
-  
-  
-  
-  
-  
-  
 
 vtkSave("d.vtk",ion_density[0],"d",grid);
 vtkSave("ef.vtk",electric_field,"ef",grid);
@@ -295,6 +252,7 @@ RSF total_charge_density(const RSF & colloid_charge_density,
 			 const std::vector<RSF> & ion_density,
 			 const std::vector<int> & ion_valence)
 {
+  cout << sum(ion_density[0]) << " " << ion_valence[0] << " " << sum(colloid_charge_density) << endl;
   RSF tcd(colloid_charge_density.copy());
   for (int n=0;n<ion_density.size();++n)
     tcd+=RSF(ion_valence[n]*ion_density[n]);
