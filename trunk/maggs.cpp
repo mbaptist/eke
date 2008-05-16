@@ -92,9 +92,10 @@ Real concentration_move(RVF & electric_field,
         b=c;
       else
         a=c;
-      if(b-a<1e-12)
+      if(b-a<1e-16)
       {
         deltac=c;
+        //cout << deltac << endl;
         break;
       }
     }
@@ -119,9 +120,7 @@ Real concentration_move(RVF & electric_field,
     Real deltac=-c2+rg.random()*(c2+c1);
 #endif
       //Evaluate the change in the functional
-    Real delta_func=-e*deltac/deltas+.5*pow(deltac/deltas,2)
-      +(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
-        -deltac*log(c1-deltac)+deltac*log(c2+deltac));
+    Real delta_func=deltafunc(deltac,c1,c2,e,deltas);
       //cout << delta_func << endl;
 //Accept the move if if minimises the functional
     if (delta_func<0)
@@ -242,7 +241,7 @@ void initialise_electric_field(RVF & electric_field,
     density(i,Range::all(),Range::all())-=mean_density;
     for(int j=0;j<ny;++j)
       for(int k=0;k<nz;++k)
-        electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density*dv/ds;;
+        electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density*dv/ds;
   }
   mean_density=mean(density(nx-1,Range::all(),Range::all()));
   density(nx-1,Range::all(),Range::all())-=mean_density;
@@ -306,7 +305,7 @@ void initialise_electric_field(RVF & electric_field,
         Real divz=electric_field[2](i,j,n2)-electric_field[2](i,j,n1);
         divz/=grid.deltaz();
         Real div=divx+divy+divz;
-        if (fabs(div-total_density(i,j,k))>.5e-5)
+        if (fabs(div-total_density(i,j,k))>.5e-10)
         {
           cout << i << " " << j << " " << k << " " 
             << divx << " " << divy <<" " << divz << "\n " 
@@ -326,10 +325,16 @@ Real functional(RVF & electric_field,std::vector<RSF> ion_concentration,std::vec
 {
   Real func=.5*sum(dot(electric_field,electric_field));
   for (int n=0;n<ion_valence.size();++n)
-    func+=sum(where(ion_concentration[n]>0,ion_concentration[n]*log(ion_concentration[n]),0))/ion_valence[n];
+    func-=sum(where(ion_concentration[n]>0,ion_concentration[n]*log(ion_concentration[n]),0));
   return func;
 }
 
+
+Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltas)
+{
+  return (-e*deltac/deltas+.5*deltac*deltac)/deltas+(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
+    -deltac*log(c1-deltac)+deltac*log(c2+deltac));
+}
 
 Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltas)
 {

@@ -4,14 +4,14 @@ from math import pi,sqrt,fabs
 
 #Physical Parameters
 #Periodicity box
-lx=30.;
-ly=30.;
-lz=30.;
+lx=40.;
+ly=40.;
+lz=40.;
 #Colloidal sphere
 #radius
 rs=3.;
 #valence
-colloid_valence=60
+colloid_valence=60.
 #Bjerrum length (supplied according to the units)
 lb=1.3
 #Ionic species in the solvent
@@ -34,7 +34,7 @@ ion_number=[fabs(colloid_valence/ion_valence[0])]
 
 #Numerical Parameters
 #grid
-nx=16
+nx=32
 ny=nx
 nz=nx
 #tolerance

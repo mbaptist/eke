@@ -53,24 +53,24 @@ using namespace std;
 ///////////////////////////////////////////
 
 PyInputParser::PyInputParser(string filename_):
-    filename(filename_),
-    python_initialised(Py_IsInitialized())
+filename(filename_),
+python_initialised(Py_IsInitialized())
 {
   Py_Initialize();
   stringstream ss;
   ss << "import sys\n"
-  << "sys.path.insert(0,'')\n"
-  << "import imp\n"
-  << "imp.load_source('input','"
-  << filename
-  << "')\n";
+    << "sys.path.insert(0,'')\n"
+    << "import imp\n"
+    << "imp.load_source('input','"
+    << filename
+    << "')\n";
   PyRun_SimpleString(ss.str().c_str());
   module=PyImport_ImportModule("input");
   dict=PyModule_GetDict(module);
 }
 
 PyInputParser::PyInputParser(PyObject * dict_):
-    python_initialised(Py_IsInitialized())
+python_initialised(Py_IsInitialized())
 {
   dict=dict_;
 }
@@ -78,12 +78,12 @@ PyInputParser::PyInputParser(PyObject * dict_):
 PyInputParser::~PyInputParser()
 {
   if(!python_initialised)
-    {
-      Py_DECREF(dict);
-      Py_DECREF(module);
-      PyRun_SimpleString("if(imp.lock_held()):imp.release_lock()\n");
-      Py_Finalize();
-    }
+  {
+    Py_DECREF(dict);
+    Py_DECREF(module);
+    PyRun_SimpleString("if(imp.lock_held()):imp.release_lock()\n");
+    Py_Finalize();
+  }
 }
 
 int PyInputParser::parse_int(const std::string & item)
@@ -110,40 +110,40 @@ std::string PyInputParser::parse_string(const std::string & item)
 
 std::vector<int> PyInputParser::parse_vector_int(const std::string & item)
 {
-	vector<int> cppvector;
-	PyObject * pyvector;
-	pyvector=pval(item);
-	for(int n=0;n<PyList_Size(pyvector);++n)
-		cppvector.push_back(PyInt_AsLong(PyList_GetItem(pyvector,n)));
-	return cppvector;		
+  vector<int> cppvector;
+  PyObject * pyvector;
+  pyvector=pval(item);
+  for(int n=0;n<PyList_Size(pyvector);++n)
+    cppvector.push_back(PyInt_AsLong(PyList_GetItem(pyvector,n)));
+  return cppvector;		
 }
 
 std::vector<double> PyInputParser::parse_vector_double(const std::string & item)
 {
-	vector<double> cppvector;
-	PyObject * pyvector;
-	pyvector=pval(item);
-	for(int n=0;n<PyList_Size(pyvector);++n)
-		cppvector.push_back(PyFloat_AsDouble(PyList_GetItem(pyvector,n)));
-	return cppvector;		
+  vector<double> cppvector;
+  PyObject * pyvector;
+  pyvector=pval(item);
+  for(int n=0;n<PyList_Size(pyvector);++n)
+    cppvector.push_back(PyFloat_AsDouble(PyList_GetItem(pyvector,n)));
+  return cppvector;		
 }
 
 PyObject * PyInputParser::pval(const std::string & item)
 {
   PyObject * pyvalue=PyDict_GetItem(dict,PyString_FromString(item.c_str()));
   if (pyvalue!=0)
-    {
-      return(pyvalue);
-    }
+  {
+    return(pyvalue);
+  }
   else
-    {
-      cout << item
+  {
+    cout << item
       << " not defined in "
       << filename
       << " . Aborting... "
       << endl;
-      exit(1);
-    }
+    exit(1);
+  }
 }
 
 
@@ -164,8 +164,14 @@ void vtkSave(const std::string & filename,const RSF & field,const std::string & 
     << "POINT_DATA " << field.size() << "\n"
     << "SCALARS " << fieldname.c_str() << " float\n"
     << "LOOKUP_TABLE default" << endl;
-  for (int n=0;n<field.size();++n)
-    ofs << field.data()[n] << endl;
+  
+  int nx(grid.nx());
+  int ny(grid.ny());
+  int nz(grid.nz());
+  for (int k=0;k<grid.nz();++k)
+    for (int j=0;j<grid.ny();++j)
+      for (int i=0;i<grid.nx();++i)
+        ofs << field(i,j,k) << endl;
 }
 
 void vtkSave(const std::string & filename,const RVF & field,const std::string & fieldname,const Grid & grid)
@@ -180,12 +186,17 @@ void vtkSave(const std::string & filename,const RVF & field,const std::string & 
     << "SPACING " << grid.deltax() << " " << grid.deltay() << " " << grid.deltaz() << "\n"
     << "POINT_DATA " << field.size() << "\n"
     << "VECTORS " << fieldname.c_str() << " float" << endl;
-  for (int n=0;n<field.size();++n)
-    {
-      for (int m=0;m<3;++m)
-        ofs << field.data()[n][m] <<" ";
-      ofs << endl;
-    }
+  int nx(grid.nx());
+  int ny(grid.ny());
+  int nz(grid.nz());
+  for (int k=0;k<grid.nz();++k)
+    for (int j=0;j<grid.ny();++j)
+      for (int i=0;i<grid.nx();++i)
+      {
+        for (int m=0;m<3;++m)
+          ofs << field(i,j,k)[m] <<" ";
+        ofs << endl;
+      }
 }
 
 #endif
