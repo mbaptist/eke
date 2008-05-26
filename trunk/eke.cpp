@@ -81,74 +81,90 @@ void poisson_boltzmann(std::string run_name)
   int nz=input.parse_int("nz");
   //Tolerance
   double eps=input.parse_double("eps");
-	
+  
   //Rescaling to non-dimensional units
   double k=sqrt(4.*M_PI*lb*fabs(colloid_valence)/(lx*ly*lz));
   colloid_valence*=lb/rs;
   for (int n=0;n<ion_number.size();++n)
-  	ion_number[n]*=lb/rs;
+    ion_number[n]*=lb/rs;
   lx*=k;
   ly*=k;
   lz*=k;
   rs*=k;
-	
+  
   //Grid
   Grid grid(nx,ny,nz,lx,ly,lz,rs);
-	
+  
   //Colloidal charges	
   RSF colloid_charge_density(nx,ny,nz);
   colloid_charge_density=0;
   distribute_colloidal_charge(colloid_charge_density,grid,colloid_valence);
-	
+  
   //Distribute ionic species	
   std::vector<RSF> ion_density;
   for (int n=0;n<ion_number.size();++n)
-    {
-      ion_density.push_back(RSF(nx,ny,nz));
-      ion_density[n]=0;
-      distribute_ions(ion_density[n],grid,ion_number[n]);
-    }
-		
+  {
+    ion_density.push_back(RSF(nx,ny,nz));
+    ion_density[n]=0;
+    distribute_ions(ion_density[n],grid,ion_number[n]);
+  }
+  
+  RSF lll(grid.point_type().shape());
+  for(int nnn=0;nnn<grid.point_type().size();++nnn)
+    lll.data()[nnn]=static_cast<double>(grid.point_type().data()[nnn]);
+  
+  vtkSave("pt.vtk",lll,"pt",grid);
+  vtkSave("d0.vtk",ion_density[0],"d",grid);
+  
   //Verify charge neutrality
   double total_charge=sum(total_charge_density(colloid_charge_density,ion_density,ion_valence))*grid.deltav();
   if (total_charge>1e-10)
-    {
-      cout << "The total charge must be zero, instead of "
-	   << total_charge << ".\n"
-	   << "Aborting..." << endl;
-      exit(1);
-    }
-
+  {
+    cout << "The total charge must be zero, instead of "
+      << total_charge << ".\n"
+      << "Aborting..." << endl;
+    exit(1);
+  }
+  
   //electric field
   RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,total_charge_density(colloid_charge_density,ion_density,ion_valence),grid);
-	
+  
   //Minimise
   int num_steps=0;
-  Real func=functional(electric_field,ion_density);
+  Real func0=functional(electric_field,ion_density);
+  cout << "Initial value of the functional: " << func0 << endl;
+  Real func=func0;
   while(1)
+  {
+    ++num_steps;
+    Real delta_func=0;
+    //Field moves
+    delta_func+=sequential_sweep_loop_moves(electric_field,grid);
+    //Ion moves
+    for (int n=0;n<ion_valence.size();++n)
+      delta_func+=sequential_sweep_concentration_moves(electric_field,ion_density[n],ion_valence[n],grid);
+      //Update the functional
+    func+=delta_func;
+      //Print iteration infos
+    cout << "Minimisation step: " << num_steps << "\t"
+      << "Variation in functional: " << delta_func << "\n"
+      << func << " " << func-func0 << endl;
+    if(num_steps%100==0)
     {
-      ++num_steps;
-      cout << "Minimisation step: " << num_steps << "\t";
-      Real delta_func=0;
-      //Field moves
-      delta_func+=sequential_sweep_loop_moves(electric_field,grid);
-      //Ion moves
-      for (int n=0;n<ion_valence.size();++n)
-	delta_func+=sequential_sweep_concentration_moves(electric_field,ion_density[n],ion_valence[n],grid);
-      cout << "Variation in functional: " << delta_func << endl;
-      func+=delta_func;
-	    //cout << func << " " << delta_func/func << endl;
-      if(fabs(delta_func)<1e-10)
-	break;
+      vtkSave("di.vtk",ion_density[0],"d",grid);
     }
-
-vtkSave("d.vtk",ion_density[0],"d",grid);
-vtkSave("ef.vtk",electric_field,"ef",grid);
-	
-	cout << sum(electric_field[0]) << endl;
-	cout << sum(electric_field[1]) << endl;
-	cout << sum(electric_field[2]) << endl;
+      //Check for stop criterium
+    if(fabs(delta_func)<1e-16)
+      break;
+  }
+  
+  vtkSave("d.vtk",ion_density[0],"d",grid);
+  vtkSave("ef.vtk",electric_field,"ef",grid);
+  
+  cout << sum(electric_field[0]) << endl;
+  cout << sum(electric_field[1]) << endl;
+  cout << sum(electric_field[2]) << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,18 +190,18 @@ void distribute_colloidal_charge(RSF & colloid_charge_density,Grid & grid,const 
   //cout << colloid_valence << endl;
   //cout << np*delta_density << endl;
   for(int n=0;n<np;++n)
-    {
-      Real theta=rg.random()*M_PI;
-      Real phi=rg.random()*2.*M_PI;
-      RV coord_ps(rs*cos(phi)*sin(theta),
-		  rs*sin(phi)*sin(theta),
-		  rs*cos(theta));
-      IV ind_np=grid.nearest_point_index(coord_ps);	
-      colloid_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_charge/grid.deltav();
-      grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
-    }
+  {
+    Real theta=rg.random()*M_PI;
+    Real phi=rg.random()*2.*M_PI;
+    RV coord_ps(rs*cos(phi)*sin(theta),
+                rs*sin(phi)*sin(theta),
+                rs*cos(theta));
+    IV ind_np=grid.nearest_point_index(coord_ps);	
+    colloid_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_charge/grid.deltav();
+    grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
+  }
 #endif
-	
+  
   //Distribute the charges on a double plane
   //For testing
   //Redifines the point types so that the ionic species are
@@ -199,28 +215,28 @@ void distribute_colloidal_charge(RSF & colloid_charge_density,Grid & grid,const 
   Real lz(grid.lz());
   grid.point_type()=0;
   int izero=nx/2;
-  int ileft=izero-nx/4;
-  int iright=izero+nx/4;
+  int ileft=izero-3;
+  int iright=izero+3;
   //cout << izero << endl;
   //cout << ileft << endl;
   //cout << iright << endl;
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k)
-	if((i>ileft)&&(i<iright))
-	  grid.point_type()(i,j,k)=1;
-	else if ((i==ileft)||(i==iright))
-	  grid.point_type()(i,j,k)=2;
-	else
-	  grid.point_type()(i,j,k)=3;
+        if((i>ileft)&&(i<iright))
+          grid.point_type()(i,j,k)=1;
+  else if ((i==ileft)||(i==iright))
+    grid.point_type()(i,j,k)=2;
+  else
+    grid.point_type()(i,j,k)=3;
   int np=2*ny*nz;
   colloid_charge_density=0;
   Real delta_charge=colloid_valence/np;
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k)
-	if(grid.point_type()(i,j,k)==2)
-		colloid_charge_density(i,j,k)+=delta_charge/grid.deltav();	
+        if(grid.point_type()(i,j,k)==2)
+          colloid_charge_density(i,j,k)+=delta_charge/grid.deltav();	
 #endif
 }
 //Distribute ions of each ionic species	
@@ -232,6 +248,7 @@ void distribute_ions(RSF & density,Grid & grid,const double & ion_number)
   Real lx(grid.lx());
   Real ly(grid.ly());
   Real lz(grid.lz());
+#if 1
   int np=count(grid.point_type()==1);
   //cout << np << endl;
   density=0;
@@ -239,18 +256,39 @@ void distribute_ions(RSF & density,Grid & grid,const double & ion_number)
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k)
-	if(grid.point_type()(i,j,k)==1)
-	  density(i,j,k)+=delta_number/grid.deltav();
+        if(grid.point_type()(i,j,k)==1)
+          density(i,j,k)+=delta_number/grid.deltav();
   //cout << sum(density) << endl;
-	
+#endif
+#if 0
+  int np=10000;
+  density=0;
+  Real delta_number=ion_number/np;
+  DiscreteUniform<int> rgx(nx);
+  DiscreteUniform<int> rgy(ny);
+  DiscreteUniform<int> rgz(nz);
+  int cnt=0;
+  while(cnt<np)
+  {
+    int i=rgx.random();
+    int j=rgy.random();
+    int k=rgz.random();
+    if(grid.point_type()(i,j,k)==1)
+    {
+      ++cnt;
+      density(i,j,k)+=delta_number/grid.deltav();
+    }
+  }
+#endif
+  
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //Evaluate total charge density
 RSF total_charge_density(const RSF & colloid_charge_density,
-			 const std::vector<RSF> & ion_density,
-			 const std::vector<int> & ion_valence)
+                         const std::vector<RSF> & ion_density,
+                         const std::vector<int> & ion_valence)
 {
   cout << sum(ion_density[0]) << " " << ion_valence[0] << " " << sum(colloid_charge_density) << endl;
   RSF tcd(colloid_charge_density.copy());
