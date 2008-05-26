@@ -48,7 +48,7 @@ Real concentration_move(RVF & electric_field,
                         const Grid & grid,
                         const IV & node1, const int & dir)
 {
-  //Define the second node
+//Define the second node
   //from the first and the direction
   IV node2(node1);
   node2[dir]+=1;
@@ -78,6 +78,20 @@ Real concentration_move(RVF & electric_field,
     Real deltas=grid.deltas(dir);
     Real deltac;
     Real deltae;
+    
+#if 0
+    int nn=100;
+    for(int ii=0;ii<nn+1;++ii)
+    {
+      Real aa=-c2;
+      Real bb=c1;
+      Real cc=aa+((bb-aa)/nn)*ii;
+        cout <<  cc << " " << d_deltafunc_d_deltac(cc,c1,c2,e,-ion_valence*cc/deltas) << endl;
+    }
+#endif
+        
+    
+    
 #if 1
     //Optimal concentration change
     //solve for the optimal concentration change with successive bisections
@@ -85,35 +99,45 @@ Real concentration_move(RVF & electric_field,
     Real fa=d_deltafunc_d_deltac(a,c1,c2,e,-ion_valence*a/deltas);
     Real b=c1;
         Real fb=d_deltafunc_d_deltac(b,c1,c2,e,-ion_valence*b/deltas);
+    //cout << fa << " " << fb << endl;
     while(1)
     {
       Real c=.5*(a+b);
       Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*c/deltas);
-      if(fa*fc<0)
-        b=c;
-      else
-        a=c;
-      if(b-a<1e-10)
+      if((fc==0)||(b-a<1e-16))
       {
         deltac=c;
         deltae=-ion_valence*deltac/deltas;
         //cout << deltac << endl;
         break;
       }
+      else if(fa*fc<0)
+      {
+        b=c;
+        fb=fc;
+      }
+      else if(fb*fc<0)
+      {
+        a=c;
+        fa=fc;
+      }
+      else
+      {
+        cout << "Successive bisection method failed" << endl;
+        exit(1);
+      }    
     }
-#endif
-#if 0
-    //Optimal concentration change
-    //solve for the optimal concentration change with fixed point iterations
-    Real deltac0=deltac;
-    while(1)
+    
+    //cout << deltac << endl;
+    if(deltac==0)
     {
-      deltac=deltac0-d_deltafunc_d_deltac(deltac0,c1,c2,e,-ion_valence*deltac/deltas);
-      if(fabs(deltac-deltac0)<.5e-16)
-        break;
-      deltac0=deltac;
-    }
+      UniformOpen<Real> rg;
+      deltac=-c2+rg.random()*(c2+c1);
     deltae=-ion_valence*deltac/deltas;
+    }
+    //cout << deltac << endl;
+    
+    
 #endif
 #if 0
     //Change the concentration by a random amount
@@ -124,13 +148,17 @@ Real concentration_move(RVF & electric_field,
 #endif
       //Evaluate the change in the functional
     Real delta_func=deltafunc(deltac,c1,c2,e,deltae);
-      //cout << delta_func << endl;
+    //cout << "delta_func: " << delta_func << endl;
 //Accept the move if if minimises the functional
     if (delta_func<0)
     {
+      //cout << "delta_func: " << delta_func << endl;
+      //cout << c1 << " " << c2 << endl;
       e+=deltae;
       c1-=deltac;
       c2+=deltac;
+      //cout << c1 << " " << c2 << "\n" << endl;
+      
       return delta_func;
     }
     else
@@ -146,8 +174,8 @@ Real loop_move(RVF & electric_field,
   //Evaluate the trial field
   Real & e1 = electric_field(loop.node1()[0],loop.node1()[1],loop.node1()[2])[loop.dir1()];
   Real & e2 = electric_field(loop.node2()[0],loop.node2()[1],loop.node2()[2])[loop.dir2()];
-  Real & e3 = electric_field(loop.node3()[0],loop.node3()[1],loop.node3()[2])[loop.dir1()];
-  Real & e4 = electric_field(loop.node4()[0],loop.node4()[1],loop.node4()[2])[loop.dir2()];
+  Real & e3 = electric_field(loop.node4()[0],loop.node4()[1],loop.node4()[2])[loop.dir1()];
+  Real & e4 = electric_field(loop.node1()[0],loop.node1()[1],loop.node1()[2])[loop.dir2()];
   //Optimal move
   //This is valid both for electrostatics and Poisson-Boltzmann
   //It is characteristic of loop moves
@@ -159,8 +187,14 @@ Real loop_move(RVF & electric_field,
   //Evaluate the change in the functional
   //This is valid both for electrostatics and Poisson-Boltzmann
   //It is characteristic of loop moves
-  Real delta_func=(e1p*e1p+e2p*e2p+e3p*e3p+e4p*e4p
-                   -e1*e1-e2*e2-e3*e3-e4*e4);
+  //Real delta_func=.5*(e1p*e1p+e2p*e2p+e3p*e3p+e4p*e4p-e1*e1-e2*e2-e3*e3-e4*e4);
+  Real delta_func=delta_field*(e1+e2-e3-e4+2.*delta_field);
+  
+  
+  //Real df=.5*(e1p*e1p+e2p*e2p+e3p*e3p+e4p*e4p-e1*e1-e2*e2-e3*e3-e4*e4);
+  //if(fabs(delta_func-df)>1e-15)
+  //  cout << delta_func << " " << df << " " << delta_func-df <<endl;
+  
   //cout << "Dfunc=" << delta_func << endl;
   //Accept/reject move
   if (delta_func<0)

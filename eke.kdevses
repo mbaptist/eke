@@ -3,7 +3,7 @@
 <KDevPrjSession>
  <DocsAndViews NumberOfDocuments="7" >
   <Doc0 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/maggs.cpp" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="0" Type="Source" />
   </Doc0>
   <Doc1 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/default.run" >
    <View0 Encoding="" Type="Source" />
@@ -21,7 +21,7 @@
    <View0 Encoding="" Type="Source" />
   </Doc5>
   <Doc6 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/maggs.hpp" >
-   <View0 Encoding="" line="74" Type="Source" />
+   <View0 Encoding="" line="75" Type="Source" />
   </Doc6>
  </DocsAndViews>
  <pluginList>
