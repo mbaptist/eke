@@ -78,27 +78,12 @@ Real concentration_move(RVF & electric_field,
     Real deltas=grid.deltas(dir);
     Real deltac;
     Real deltae;
-    
-#if 0
-    int nn=100;
-    for(int ii=0;ii<nn+1;++ii)
-    {
-      Real aa=-c2;
-      Real bb=c1;
-      Real cc=aa+((bb-aa)/nn)*ii;
-        cout <<  cc << " " << d_deltafunc_d_deltac(cc,c1,c2,e,-ion_valence*cc/deltas) << endl;
-    }
-#endif
-        
-    
-    
-#if 1
     //Optimal concentration change
     //solve for the optimal concentration change with successive bisections
     Real a=-c2;
     Real fa=d_deltafunc_d_deltac(a,c1,c2,e,-ion_valence*a/deltas);
     Real b=c1;
-        Real fb=d_deltafunc_d_deltac(b,c1,c2,e,-ion_valence*b/deltas);
+    Real fb=d_deltafunc_d_deltac(b,c1,c2,e,-ion_valence*b/deltas);
     //cout << fa << " " << fb << endl;
     while(1)
     {
@@ -123,29 +108,19 @@ Real concentration_move(RVF & electric_field,
       }
       else
       {
-        cout << "Successive bisection method failed" << endl;
-        exit(1);
+        //cout << "Successive bisection method failed" << endl;
+        deltac=0;
+	break;
       }    
     }
-    
-    //cout << deltac << endl;
+    //Try a random change if the optimal change
+    //could not be determined
     if(deltac==0)
     {
       UniformOpen<Real> rg;
-      deltac=-c2+rg.random()*(c2+c1);
-    deltae=-ion_valence*deltac/deltas;
+      deltac=-c2+rg.random()*(c1+c2);
+      deltae=-ion_valence*deltac/deltas;
     }
-    //cout << deltac << endl;
-    
-    
-#endif
-#if 0
-    //Change the concentration by a random amount
-    //in the interval (-c2,c1)
-    UniformOpen<Real> rg;
-    deltac=-c2+rg.random()*(c2+c1);
-    deltae=-ion_valence*deltac/deltas;
-#endif
       //Evaluate the change in the functional
     Real delta_func=deltafunc(deltac,c1,c2,e,deltae);
     //cout << "delta_func: " << delta_func << endl;
@@ -153,12 +128,9 @@ Real concentration_move(RVF & electric_field,
     if (delta_func<0)
     {
       //cout << "delta_func: " << delta_func << endl;
-      //cout << c1 << " " << c2 << endl;
       e+=deltae;
       c1-=deltac;
-      c2+=deltac;
-      //cout << c1 << " " << c2 << "\n" << endl;
-      
+      c2+=deltac; 
       return delta_func;
     }
     else
@@ -177,38 +149,22 @@ Real loop_move(RVF & electric_field,
   Real & e3 = electric_field(loop.node4()[0],loop.node4()[1],loop.node4()[2])[loop.dir1()];
   Real & e4 = electric_field(loop.node1()[0],loop.node1()[1],loop.node1()[2])[loop.dir2()];
   //Optimal move
-  //This is valid both for electrostatics and Poisson-Boltzmann
-  //It is characteristic of loop moves
   Real delta_field=-.25*(e1+e2-e3-e4);
-  Real e1p=e1+delta_field;
-  Real e2p=e2+delta_field;
-  Real e3p=e3-delta_field;
-  Real e4p=e4-delta_field;
   //Evaluate the change in the functional
-  //This is valid both for electrostatics and Poisson-Boltzmann
-  //It is characteristic of loop moves
-  //Real delta_func=.5*(e1p*e1p+e2p*e2p+e3p*e3p+e4p*e4p-e1*e1-e2*e2-e3*e3-e4*e4);
   Real delta_func=delta_field*(e1+e2-e3-e4+2.*delta_field);
-  
-  
-  //Real df=.5*(e1p*e1p+e2p*e2p+e3p*e3p+e4p*e4p-e1*e1-e2*e2-e3*e3-e4*e4);
-  //if(fabs(delta_func-df)>1e-15)
-  //  cout << delta_func << " " << df << " " << delta_func-df <<endl;
-  
   //cout << "Dfunc=" << delta_func << endl;
   //Accept/reject move
   if (delta_func<0)
   {
-    e1=e1p;
-    e2=e2p;
-    e3=e3p;
-    e4=e4p;
+    e1+=delta_field;
+    e2+=delta_field;
+    e3-=delta_field;
+    e4-=delta_field;
     return delta_func;
-      //cout << "Circulation: " << e1+e2-e3-e4 << endl;
   }
   else 
     return 0;
-};
+}
 
 
 
