@@ -66,7 +66,7 @@ Real sequential_sweep_loop_moves(RVF & electric_field,
 //// INITIALISATIONS ////
 
 void initialise_electric_field(RVF & electric_field,
-                               const RSF & charges,
+                               const RSF & total_charge_density,
                                const Grid & grid);
 
 //// FUNCTIONAL ////
@@ -74,5 +74,11 @@ void initialise_electric_field(RVF & electric_field,
 Real functional(RVF & electric_field,std::vector<RSF> ion_concentration);
 Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae);
 Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae);
+
+
+//// DIFFERENTIAL OPERATORS ////
+
+RSF divergence(const RVF & field,const Grid & grid);
+
 
 #endif

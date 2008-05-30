@@ -85,41 +85,45 @@ Real concentration_move(RVF & electric_field,
     Real b=c1;
     Real fb=d_deltafunc_d_deltac(b,c1,c2,e,-ion_valence*b/deltas);
     //cout << fa << " " << fb << endl;
-    while(1)
+    if(fa*fb<0)
     {
-      Real c=.5*(a+b);
-      Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*c/deltas);
-      if((fc==0)||(b-a<1e-16))
+      while(1)
       {
-        deltac=c;
-        deltae=-ion_valence*deltac/deltas;
+        Real c=.5*(a+b);
+        Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*c/deltas);
+        if((fc==0)||(b-a<1e-16))
+        {
+          deltac=c;
+          deltae=-ion_valence*deltac/deltas;
         //cout << deltac << endl;
-        break;
-      }
-      else if(fa*fc<0)
-      {
-        b=c;
-        fb=fc;
-      }
-      else if(fb*fc<0)
-      {
-        a=c;
-        fa=fc;
-      }
-      else
-      {
+          break;
+        }
+        else if(fa*fc<0)
+        {
+          b=c;
+          fb=fc;
+        }
+        else if(fb*fc<0)
+        {
+          a=c;
+          fa=fc;
+        }
+        else
+        {
         //cout << "Successive bisection method failed" << endl;
-        deltac=0;
-	break;
-      }    
+          deltac=0;
+          break;
+        }    
+      }   
     }
-    //Try a random change if the optimal change
-    //could not be determined
+    else
+      deltac=0;
+  //Try a random change if the optimal change
+    //could not be determined or is equal to 0
     if(deltac==0)
     {
-      UniformOpen<Real> rg;
+       UniformOpen<Real> rg;
       deltac=-c2+rg.random()*(c1+c2);
-      deltae=-ion_valence*deltac/deltas;
     }
       //Evaluate the change in the functional
     Real delta_func=deltafunc(deltac,c1,c2,e,deltae);
@@ -211,103 +215,79 @@ Real sequential_sweep_loop_moves(RVF & electric_field,
 //// INITIALISATIONS ////
 
 void initialise_electric_field(RVF & electric_field,
-                               const RSF & total_density,
+                               const RSF & total_charge_density,
                                const Grid & grid)
 {
+  electric_field=RV(0,0,0);
+  RSF density(total_charge_density.copy());
   int nx(grid.nx());
   int ny(grid.ny());
   int nz(grid.nz());
-  electric_field=RV(0,0,0);
-  RSF density(total_density.copy());
-  Real mean_density;
-  double dv=grid.deltav();
+  Real dv=grid.deltav();
   //Ex
-  Real ds=grid.deltasx();
-  mean_density=mean(density(0,Range::all(),Range::all()));
+  Real mean_density=mean(density(0,Range::all(),Range::all()));
   density(0,Range::all(),Range::all())-=mean_density;
   for(int j=0;j<ny;++j)
     for(int k=0;k<nz;++k)
-      electric_field[0](0,j,k)=mean_density*dv/ds;
-  for(int i=1;i<nx-1;++i)
+      electric_field[0](0,j,k)=0;
+  for(int i=1;i<nx;++i)
   {
     mean_density=mean(density(i,Range::all(),Range::all()));
     density(i,Range::all(),Range::all())-=mean_density;
     for(int j=0;j<ny;++j)
       for(int k=0;k<nz;++k)
-        electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density*dv/ds;
+        electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density;
   }
-  mean_density=mean(density(nx-1,Range::all(),Range::all()));
-  density(nx-1,Range::all(),Range::all())-=mean_density;
-  for(int j=0;j<ny;++j)
-    for(int k=0;k<nz;++k)
-      electric_field[0](nx-1,j,k)=0.;
+  //geometric factors for Ex
+  Real ds=grid.deltasx();
+  electric_field[0]*=dv/ds;
   //Ey
-  ds=grid.deltasy();
   for(int i=0;i<nx;++i)
   {
     mean_density=mean(density(i,0,Range::all()));
     density(i,0,Range::all())-=mean_density;
     for(int k=0;k<nz;++k)
-      electric_field[1](i,0,k)=mean_density*dv/ds;
-    for(int j=1;j<ny-1;++j)
+      electric_field[1](i,0,k)=0;
+    for(int j=1;j<ny;++j)
     {
       mean_density=mean(density(i,j,Range::all()));
       density(i,j,Range::all())-=mean_density;
       for(int k=0;k<nz;++k)
-        electric_field[1](i,j,k)=electric_field[1](i,j-1,k)+mean_density*dv/ds;;
+        electric_field[1](i,j,k)=electric_field[1](i,j-1,k)+mean_density;
     }
-    mean_density=mean(density(i,ny-1,Range::all()));
-    density(i,ny-1,Range::all())-=mean_density;
-    for(int k=0;k<nz;++k)
-      electric_field[1](i,ny-1,k)=0.;
   }
+    //geometric factors for Ey
+  ds=grid.deltasy();
+  electric_field[1]*=dv/ds;
   //Ez
-  ds=grid.deltasz();
   for(int i=0;i<nx;++i)
     for(int j=0;j<ny;++j)
     {
-      electric_field[2](i,j,0)=density(i,j,0)*dv/ds;
-      for(int k=1;k<nz-1;++k)
-        electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+density(i,j,k)*dv/ds;
-      electric_field[2](i,j,nz-1)=0;
-    }
+      electric_field[2](i,j,0)=0;
+      for(int k=1;k<nz;++k)
+        electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+density(i,j,k);
+    }  
+  //geometric factors for Ez
+  ds=grid.deltasz();
+  electric_field[2]*=dv/ds;
   
-#if 1
+  //cout << sum(divergence(electric_field,grid))*dv << endl;
+  //cout << sum(total_charge_density)*dv << endl;
+      
   //Test for div E = \rho
-  for(int i=0;i<nx;++i)
-    for(int j=0;j<ny;++j)
-      for(int k=0;k<nz;++k)
-      {
-        int n1,n2;
-        n1=i-1;
-        if (n1==-1)
-          n1=nx-1;
-        n2=i;
-        Real divx=electric_field[0](n2,j,k)-electric_field[0](n1,j,k);
-        divx/=grid.deltax();
-        n1=j-1;
-        if (n1==-1)
-          n1=ny-1;
-        n2=j;
-        Real divy=electric_field[1](i,n2,k)-electric_field[1](i,n1,k);
-        divy/=grid.deltay();
-        n1=k-1;
-        if (n1==-1)
-          n1=nz-1;
-        n2=k;
-        Real divz=electric_field[2](i,j,n2)-electric_field[2](i,j,n1);
-        divz/=grid.deltaz();
-        Real div=divx+divy+divz;
-        if (fabs(div-total_density(i,j,k))>.5e-10)
-        {
-          cout << i << " " << j << " " << k << " " 
-            << divx << " " << divy <<" " << divz << "\n " 
-            << div << " " << total_density(i,j,k) << endl;
-          exit(1);
-        }
-      }
-#endif 
+  if(count(fabs(divergence(electric_field,grid)-total_charge_density)>1e-10)>0)
+  {
+    cout << count(fabs(divergence(electric_field,grid)-total_charge_density)>1e-10) << endl;
+    cout << sum(divergence(electric_field,grid)) << endl;
+    cout << sum(total_charge_density) << endl;
+    cout << "The electric field doesn't obey the Gauss law. \n"
+      << "Aborting..." << endl;
+    exit(1);
+  }
   
+  cout << count(fabs(divergence(electric_field,grid)-total_charge_density)>1e-15) << endl;
+  
+  //exit(0);
   
 }
 
@@ -326,7 +306,7 @@ Real functional(RVF & electric_field,std::vector<RSF> ion_concentration)
 Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
 {
   return (e+.5*deltae)*deltae+(c1*log(1-deltac/c1)+c2*log(1+deltac/c2)
-    -deltac*log(c1-deltac)+deltac*log(c2+deltac));
+                                 -deltac*log(c1-deltac)+deltac*log(c2+deltac));
 }
 
 Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
@@ -340,6 +320,40 @@ Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, 
     return deltac-(c1*exp_earg-c2)/(exp_earg+1);
   else
     return deltac-(c1-c2)/2.;
+}
+
+//// DIFFERENTIAL OPERATORS ////
+
+RSF divergence(const RVF & field,const Grid & grid)
+{
+  RSF div(field.shape());
+  div=0;
+  int nx=grid.nx();
+  int ny=grid.ny();
+  int nz=grid.nz();
+  for(int i=0;i<nx;++i)
+    for(int j=0;j<ny;++j)
+      for(int k=0;k<nz;++k)
+      {
+        Real divx,divy,divz;
+        if (i==0)
+          divx=field[0](i,j,k)-field[0](nx-1,j,k);
+        else
+          divx=field[0](i,j,k)-field[0](i-1,j,k);
+        divx/=grid.deltax();
+        if (j==0)
+          divy=field[1](i,j,k)-field[1](i,ny-1,k);
+        else
+          divy=field[1](i,j,k)-field[1](i,j-1,k);
+        divy/=grid.deltay();
+        if (k==0)
+          divz=field[2](i,j,k)-field[2](i,j,nz-1);
+        else
+          divz=field[2](i,j,k)-field[2](i,j,k-1);
+        divz/=grid.deltaz();
+        div(i,j,k)=divx+divy+divz;
+      }
+  return div;
 }
 
 
