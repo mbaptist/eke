@@ -35,6 +35,8 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 #define GRID_HPP
 
 #include "types.hpp"
+#include <vector>
+#include "random.hpp"
 
 class Grid
 {
@@ -42,7 +44,7 @@ class Grid
 private:
   //Members
   int nx_,ny_,nz_;
-  Real lx_,ly_,lz_,rs_;
+  Real lx_,ly_,lz_;
   RVF coordinates_;
   ISF point_type_;
   Real deltax_,deltay_,deltaz_;
@@ -56,9 +58,6 @@ public:
   Real & lx(){return lx_;};
   Real & ly(){return ly_;};
   Real & lz(){return lz_;};
-  Real & rs(){return rs_;};
-  RVF & coordinates(){return coordinates_;};
-  ISF & point_type(){return point_type_;};
   Real & deltax(){return deltax_;};
   Real & deltay(){return deltay_;};
   Real & deltaz(){return deltaz_;};
@@ -75,6 +74,9 @@ public:
     else
       return deltasz_;
   };
+  const RV coordinates(const int & i,const int & j,const int & k){return RV(-.5*lx_+i*deltax_,-.5*ly_+j*deltay_,-.5*lz_+k*deltaz_);};
+  ISF & point_type(){return point_type_;};
+  
   //Constant Accessors
   const int & nx() const {return nx_;};
   const int & ny() const {return ny_;};
@@ -82,9 +84,6 @@ public:
   const Real & lx() const {return lx_;};
   const Real & ly() const {return ly_;};
   const Real & lz() const {return lz_;};
-  const Real & rs() const {return rs_;};
-  const RVF & coordinates() const {return coordinates_;};
-  const ISF & point_type() const {return point_type_;};
   const Real & deltax() const {return deltax_;};
   const Real & deltay() const {return deltay_;};
   const Real & deltaz() const {return deltaz_;};
@@ -101,7 +100,16 @@ public:
     else
       return deltasz_;
   };
-	//Methods
+  const RV coordinates(const int & i,const int & j,const int & k) const {return RV(-.5*lx_+i*deltax_,-.5*ly_+j*deltay_,-.5*lz_+k*deltaz_);};
+  const ISF & point_type() const {return point_type_;};
+  
+
+  //Methods
+  IV intobox(IV & node) const
+  {
+    return IV(node[0]%nx_,node[1]%ny_,node[2]%nz_);
+  };
+  
   const IV nearest_point_index(const RV & coord)
   {
     int ind_lip_x=static_cast<int>((coord[0]+.5*lx_)/(lx_/nx_));
@@ -140,10 +148,21 @@ public:
 public:
   //Ctors
   Grid(const int & _nx_, const int & _ny_,const int & _nz_,
-       const Real & _lx_, const Real & _ly_,const Real & _lz_,
-       const Real & _rs_);
+       const Real & _lx_, const Real & _ly_,const Real & _lz_):
+    nx_(_nx_),ny_(_ny_),nz_(_nz_),
+    lx_(_lx_),ly_(_ly_),lz_(_lz_),
+    coordinates_(nx_,ny_,nz_),
+    point_type_(nx_,ny_,nz_),
+    deltax_(lx_/nx_),
+    deltay_(ly_/ny_),
+    deltaz_(lz_/nz_),
+    deltasx_(deltay_*deltaz_),
+    deltasy_(deltax_*deltaz_),
+    deltasz_(deltay_*deltaz_),
+    deltav_(deltax_*deltay_*deltaz_)
+  {};
   //Dtor
-  ~Grid();
+  ~Grid(){};
   
 private:
   //Forbidden Ctors
@@ -251,6 +270,86 @@ private:
   Loop();
   
 };
+
+
+
+class Path
+{
+  //Members
+private:
+  std::vector<IV> path_;
+  int size_;
+  std::vector<IV> direction_;
+  std::vector<int> direction_axis_;
+  
+  //Accessors
+  
+public:
+  const std::vector<IV> & operator()(){return path_;};
+  const IV & operator()(const int & n){return path_[n];}
+  const int & size(){return size_;};
+  const std::vector<IV> & direction(){return direction_;};
+  const IV & direction(const int & n){return direction_[n];};
+  const int & direction_axis(const int & n){direction_axis_[n];};
+    
+  const std::vector<IV> & operator()() const {return path_;};
+  const IV & operator()(const int & n) const {return path_[n];}
+  const int & size() const {return size_;};
+  const std::vector<IV> & direction() const {return direction_;};
+  const IV & direction(const int & n) const {return direction_[n];};
+  const int & direction_axis(const int & n) const {direction_axis_[n];};
+  
+  //Ctors
+public:
+#if 0
+  Path(const IV & _node1_,const IV & _node2_)
+  {
+    path_.push_back(_node1_);
+    for(int i=_node1_[0]+1;i<=_node2_[0];++i)
+    {
+      path_.push_back(IV(_node1_[0]+i,_node1_[1],_node1_[2]));
+      direction_axis_.push_back(0);
+      direction_.push_back(IV(1,0,0));
+    }
+    for(int j=_node1_[1]+1;j<=_node2_[1];++j)
+    {
+      path_.push_back(IV(_node1_[0],_node1_[1]+j,_node1_[2]));
+      direction_axis_.push_back(1);
+      direction_.push_back(IV(0,1,0));
+    }
+    for(int k=_node1_[2]+1;k<_node2_[2];++k)
+    {
+      path_.push_back(IV(_node1_[0],_node1_[1],_node1_[2]+k)); 
+      direction_axis_.push_back(2);
+      direction_.push_back(IV(0,0,1));
+    }
+    path_.push_back(IV(_node1_[0],_node1_[1],_node1_[2]+k));
+    
+  };
+#endif
+  Path(const IV & _node1_,const int & _dir_,const Grid & grid)
+  {
+    path_.push_back(_node1_);
+    direction_axis_.push_back(_dir_);
+    direction_.push_back(IV(0,0,0)); 
+    direction_[0][direction_axis_[0]]=1;
+    IV node2(_node1_);
+    node2+=direction_[0];
+    //Apply periodic boundary
+    node2=grid.intobox(node2);
+    path_.push_back(node2);
+    size_=2;
+  };
+  //Dtor
+     ~Path(){};
+
+private:
+  //Forbidden Ctors
+  Path();
+  
+  
+};
+
 
 
 #endif

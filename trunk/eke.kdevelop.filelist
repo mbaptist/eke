@@ -1,11 +1,9 @@
 # KDevelop Custom Project File List
 Makefile
 eke.cpp
-eke.hpp
 eke_python.cpp
 field.hpp
 geometry.hpp
-grid.cpp
 grid.hpp
 io.cpp
 io.hpp
