@@ -33,14 +33,14 @@ LIB=-lpython$(PYTHON_VERSION)
 IFLAGS = $(DEBUG) $(INCLUDE)
 FLAGS = $(DEBUG) $(LIB)
 
-OBJECTS = eke.o maggs.o io.o
+OBJECTS = pb_colloid.o maggs.o io.o
 
 ###############################################################################
 
 all: eke
 
 clean:
-	@rm -rfv eke *.o *.so
+	@rm -rfv pb_colloid *.o *.so
 
 distclean: clean
 	@rm -rfv *~
@@ -49,5 +49,5 @@ distclean: clean
 	$(CXX) $(IFLAGS) -c $<
 
 eke: $(OBJECTS) 
-	$(CXX) -o eke $(OBJECTS) $(FLAGS)
+	$(CXX) -o  pb_colloid $(OBJECTS) $(FLAGS)
 

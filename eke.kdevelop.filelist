@@ -1,6 +1,5 @@
 # KDevelop Custom Project File List
 Makefile
-eke.cpp
 eke_python.cpp
 field.hpp
 geometry.hpp
@@ -9,5 +8,6 @@ io.cpp
 io.hpp
 maggs.cpp
 maggs.hpp
+pb_colloid.cpp
 random.hpp
 types.hpp
