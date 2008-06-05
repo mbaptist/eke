@@ -1,5 +1,5 @@
 eke:
-        scons
+	scons
 clean:
-        scons --clean
+	scons --clean
 
