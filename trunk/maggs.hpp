@@ -43,13 +43,17 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //// INITIALISATIONS ////
-//Distribute ions of each ionic species	
-void distribute_ions(RSF & density,Grid & grid,const double & ion_number);
+//Distribute ionic species
+void distribute_ionic_species(std::vector<RSF> & ion_density,
+                              const std::vector<double> & ion_number,
+                              const string & runsname,
+                              const Grid & grid);
 //Initialise the electric field
 void initialise_electric_field(RVF & electric_field,
                                const RSF & fixed_charge_density,
                                const std::vector<RSF> & ion_density,
                                const std::vector<int> & ion_valence,
+                               const double & eps,
                                const Grid & grid);
 
 
@@ -86,8 +90,12 @@ Real sequential_sweep_ion_moves(RVF & electric_field,
                                 const Grid & grid);
 //// MINIMISE ////
 
-void minimise(RVF & electric_field, std::vector<RSF> & ion_density, const std::vector<int> & ion_valence, const Grid & grid, const int & savingstep, const Real & tolerance);
-
+void minimise(RVF & electric_field,
+              std::vector<RSF> & ion_density,
+              const std::vector<int> & ion_valence,
+              const int & savingstep, 
+              const Real & eps,
+              const Grid & grid);
 
 //// DIFFERENTIAL OPERATORS ////
 //Divergence

@@ -41,53 +41,67 @@ using namespace ranlib;
 
 //// INITIALISATIONS ////
 
-//Distribute ions of each ionic species	
-void distribute_ions(RSF & density,Grid & grid,const double & ion_number)
+//Distribute ionic species
+void distribute_ionic_species(std::vector<RSF> & ion_density,
+                              const std::vector<double> & ion_number,
+                              const string & runsname,
+                              const Grid & grid)
 {
-  cout << "Entering distribute_ions..." << endl;
+  cout << "Distributing ions species..." << endl;
   int nx(grid.nx());
   int ny(grid.ny());
   int nz(grid.nz());
-  int np=count(grid.point_type()==1);
-  density=0;
-  Real delta_number=ion_number/np;
-  cout << delta_number*np << endl;
-  for (int i=0;i<grid.nx();++i)
-    for (int j=0;j<grid.ny();++j)
-      for (int k=0;k<grid.nz();++k)
-        if(grid.point_type()(i,j,k)==1)
-          density(i,j,k)=delta_number;
-  density/=grid.deltav();  
-  cout << "Ion number: " << ion_number << endl;
-  cout << "Number of points of type 1: " << np << endl;
-  cout << "delta_number: " << delta_number << endl;
-  cout << delta_number*np << endl;
-  cout << sum(density)*grid.deltav() << endl;
-  cout << "...leaving distribute_ions." << endl;
+  int npt1=count(grid.point_type()==1);
+  cout << " number of point of type 1 (where charges can move): " <<  npt1 << endl;
+  for (int n=0;n<ion_number.size();++n)
+  {
+    cout << " distributing ions of species " << n << ":" << endl;
+    ion_density.push_back(RSF(nx,ny,nz));
+    ion_density[n]=0;
+    Real delta_density=(ion_number[n]/grid.deltav())/npt1;
+    cout << "  delta_density: " << delta_density << endl;
+    cout << "  running nodes..." << endl;
+    for (int i=0;i<grid.nx();++i)
+      for (int j=0;j<grid.ny();++j)
+        for (int k=0;k<grid.nz();++k)
+          if(grid.point_type()(i,j,k)==1)
+            ion_density[n](i,j,k)=delta_density;  
+    cout << "  saving density..." << endl;
+    std::stringstream ss;
+    ss << runsname << "_ion_density_" << n << "_initial";
+    vtkSave(ss.str(),ion_density[0],"density",grid);
+  }
+  cout << "... done." << endl;
 }
+
 
 //Initialise the elctric field
 void initialise_electric_field(RVF & electric_field,
                                const RSF & fixed_charge_density,
                                const std::vector<RSF> & ion_density,
                                const std::vector<int> & ion_valence,
+                               const double & eps,
                                const Grid & grid)
 {
+  cout << "Initialising the electric field..." << endl;
+
   //Initilise the field with zeros
   electric_field=RV(0,0,0);
   //Evaluate the total charge density (tcd)
   RSF tcd(fixed_charge_density.copy());
   for (int n=0;n<ion_density.size();++n)
     tcd+=RSF(ion_valence[n]*ion_density[n]);
+  
   RSF density(tcd.copy());
-  //Check for charge neutrality
+  //Check charge neutrality
+  cout << " Checking charge neutrality..." << endl;
   double total_charge=sum(tcd)*grid.deltav();
-  cout << "Total charge: " << total_charge << endl;
-  if (fabs(total_charge)>1e-10)
+  cout << "  total charge: " << total_charge << endl;
+  if (fabs(total_charge)>eps)
   {
-    cout << "The total charge must be zero, instead of "
+    cout << "  The total charge must be zero, instead of "
       << total_charge << ".\n"
-      << "Aborting..." << endl;
+      << "  Aborting..." << endl;
     exit(1);
   }
   //Get some necessary grid parameters
@@ -141,25 +155,19 @@ void initialise_electric_field(RVF & electric_field,
   //geometric factors for Ez
   ds=grid.deltasz();
   electric_field[2]*=dv/ds;
-  
-  //cout << sum(divergence(electric_field,grid))*dv << endl;
-  //cout << sum(total_charge_density)*dv << endl;
-  
   //Test for div E = \rho
-  if(count(fabs(divergence(electric_field,grid)-tcd)>1e-10)>0)
+  cout << " Checking Gauss law..." << endl;
+  if(count(fabs(divergence(electric_field,grid)-tcd)>eps)>0)
   {
-    cout << count(fabs(divergence(electric_field,grid)-tcd)>1e-10) << endl;
+    cout << count(fabs(divergence(electric_field,grid)-tcd)>eps) << endl;
     cout << sum(divergence(electric_field,grid)) << endl;
     cout << sum(tcd) << endl;
-    cout << "The electric field doesn't obey the Gauss law. \n"
-      << "Aborting..." << endl;
+    cout << "  The electric field doesn't obey the Gauss law. \n"
+      << "  Aborting..." << endl;
     exit(1);
   }
-  
-  cout << count(fabs(divergence(electric_field,grid)-tcd)>1e-15) << endl;
-  
-  //exit(0);
-  
+
+  cout << "...done." << endl;
 }
 
 
@@ -260,7 +268,7 @@ Real ion_move(RVF & electric_field,
     
     Real & e = electric_field(node1[0],node1[1],node1[2])[path.direction_axis(0)];
     
-
+    
 //Check if concentration is negative
     if((c1<0)||(c2<0))
     {
@@ -284,7 +292,7 @@ Real ion_move(RVF & electric_field,
         Real c=.5*(a+b);
         Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*c/deltas);
         //cout << a << " " << b << " " << b-a <<" " << c << " " << fc << endl;
-        if((fc==0)||(b-a<1e-15))
+        if((fc==0)||(b-a<1e-10))
         {
           deltac=c;
           deltae=-ion_valence*deltac/deltas;
@@ -311,9 +319,9 @@ Real ion_move(RVF & electric_field,
     }
     else
       deltac=0;
+#if 1
   //Try a random change if the optimal change
     //could not be determined or is equal to 0
-#if 1
     if(deltac==0)
     {
       UniformOpen<Real> rg;
@@ -347,7 +355,6 @@ Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real 
     return (e+.5*deltae)*deltae+c2*log(1+deltac/c2)-deltac*log(-deltac)+deltac*log(c2+deltac);
   else if(c2==0)
     return (e+.5*deltae)*deltae+c1*log(1-deltac/c1)-deltac*log(c1-deltac)+deltac*log(deltac);
-  
   else
     return (e+.5*deltae)*deltae+c1*log(1-deltac/c1)+c2*log(1+deltac/c2)-deltac*log(c1-deltac)+deltac*log(c2+deltac);
 }
@@ -377,17 +384,13 @@ Real sequential_sweep_ion_moves(RVF & electric_field,
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k) 
-      {
-        DiscreteUniform<int> rg(3);
-        int dir=rg.random();
         for (int m=0;m<3;++m)
         {
-          Path path(IV(i,j,k),dir%3,grid);
-	    //Perform the concentration move
+          //Generate the path
+          Path path(IV(i,j,k),m,grid);
+          //Perform the concentration move
           delta_func+=ion_move(electric_field,concentration,ion_valence,path,grid);
-          ++dir;
         }
-      }
   return delta_func;
 }
 
@@ -396,11 +399,17 @@ Real sequential_sweep_ion_moves(RVF & electric_field,
 
 //// MINIMISE ////
 
-void minimise(RVF & electric_field, std::vector<RSF> & ion_density,const std::vector<int> & ion_valence,const Grid & grid, const int & savingstep, const Real & tolerance)
+void minimise(RVF & electric_field,
+              std::vector<RSF> & ion_density,
+              const std::vector<int> & ion_valence,
+              const int & savingstep, 
+              const Real & eps,
+              const Grid & grid)
 {
+  cout << "Minimising... " << endl;
   int num_steps=0;
   Real func0=functional(electric_field,ion_density);
-  cout << "Initial value of the functional: " << func0 << endl;
+  cout << " Initial value of the functional: " << func0 << endl;
   Real func=func0;
   while(1)
   {
@@ -414,7 +423,7 @@ void minimise(RVF & electric_field, std::vector<RSF> & ion_density,const std::ve
       //Update the functional
     func+=delta_func;
       //Print iteration infos
-    cout << "Minimisation step: " << num_steps << "\t"
+    cout << " Minimisation step: " << num_steps << "\t"
       << "Variation in functional: " << delta_func << "\t"
       << "Functional: " << func << endl;
   //Save fields
@@ -424,14 +433,15 @@ void minimise(RVF & electric_field, std::vector<RSF> & ion_density,const std::ve
       {
         std::stringstream ss;
         ss << "ion_density_" << n << "_intermediate";
-        vtkSave(ss.str(),ion_density[0],"density",grid);
+        vtkSave(ss.str(),ion_density[n],"density",grid);
       }
       vtkSave("electric_field_intermediate",electric_field,"electric_field",grid);
     }
       //Check for stop criterium
-    if(fabs(delta_func)<tolerance)
+    if(fabs(delta_func)<eps)
       break;
   }
+  cout << "...done." << endl;
 }
 
 

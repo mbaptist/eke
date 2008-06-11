@@ -45,7 +45,6 @@ private:
   //Members
   int nx_,ny_,nz_;
   Real lx_,ly_,lz_;
-  RVF coordinates_;
   ISF point_type_;
   Real deltax_,deltay_,deltaz_;
   Real deltasx_,deltasy_,deltasz_;
@@ -115,9 +114,9 @@ public:
     int ind_lip_x=static_cast<int>((coord[0]+.5*lx_)/(lx_/nx_));
     int ind_lip_y=static_cast<int>((coord[1]+.5*ly_)/(ly_/ny_));
     int ind_lip_z=static_cast<int>((coord[2]+.5*lz_)/(lz_/nz_));
-    
+
     RV dist_vec=coord;
-    dist_vec-=coordinates_(ind_lip_x,ind_lip_y,ind_lip_z);
+    dist_vec-=coordinates(ind_lip_x,ind_lip_y,ind_lip_z);
     Real distance0=norm(dist_vec);
     int ind_np_x=ind_lip_x;
     int ind_np_y=ind_lip_y;
@@ -127,7 +126,7 @@ public:
         for(int k=0;k<2;++k)
         {
           dist_vec=coord;
-          dist_vec-=coordinates_(ind_lip_x+i,ind_lip_y+j,ind_lip_z+k);
+          dist_vec-=coordinates(ind_lip_x+i,ind_lip_y+j,ind_lip_z+k);
           Real distance=norm(dist_vec); 
           if(distance<distance0)
           {
@@ -139,11 +138,6 @@ public:
         }
     return IV(ind_np_x,ind_np_y,ind_np_z);
   };
-  const RV nearest_point(const RV & coord)
-  {
-    IV inp=nearest_point_index(coord);
-    return RV(inp[0],inp[1],inp[2]);
-  };
   
 public:
   //Ctors
@@ -151,7 +145,6 @@ public:
        const Real & _lx_, const Real & _ly_,const Real & _lz_):
     nx_(_nx_),ny_(_ny_),nz_(_nz_),
     lx_(_lx_),ly_(_ly_),lz_(_lz_),
-    coordinates_(nx_,ny_,nz_),
     point_type_(nx_,ny_,nz_),
     deltax_(lx_/nx_),
     deltay_(ly_/ny_),

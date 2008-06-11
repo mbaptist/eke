@@ -66,6 +66,7 @@ class PyInputParser
     PyObject * pval(const std::string & item);
     PyThreadState * inter;
     bool python_initialised;
+    bool state;
   public:
     //Constructor from filename
     PyInputParser(std::string filename_);
@@ -73,6 +74,9 @@ class PyInputParser
     PyInputParser(PyObject * module_);
     //Destructor
     ~PyInputParser();
+    //Methods
+    //void open();
+    void close();
     //Python to C++ conversion function
     int parse_int(const std::string & item);
     bool parse_bool(const std::string & item);
@@ -85,6 +89,8 @@ class PyInputParser
     PyInputParser();//default
     PyInputParser(const PyInputParser &);//copy
   };
+
+
 
 void vtkSave(const std::string & filename,const RSF & field,const std::string & fieldname,const Grid & grid);
 
