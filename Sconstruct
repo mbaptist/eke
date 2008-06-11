@@ -1,19 +1,22 @@
 
-
-sources=['pb_colloid.cpp','io.cpp','maggs.cpp']
-
 import sys
 pyver=sys.version[:3]
 
 incs=['/usr/include/python'+pyver]
-
-print(incs);
-
 libs=['python'+pyver]
 
 env = Environment(CPPPATH=incs)
 
-env.Program('pb_colloid',sources,LIBS=libs)
+sources=['io.cpp','maggs.cpp']
+env.Object(sources)
+objects=['io.o','maggs.o']
 
+print(objects);
 
+targets=['pb_colloid','pb_double_plane','p_spherical_capacitor']
+
+for target in targets:
+  source=[target+'.cpp']
+  source.append(objects)
+  env.Program(target,source,LIBS=libs)
 

@@ -6,6 +6,8 @@ io.cpp
 io.hpp
 maggs.cpp
 maggs.hpp
+p_spherical_capacitor.cpp
 pb_colloid.cpp
+pb_double_plane.cpp
 random.hpp
 types.hpp

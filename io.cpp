@@ -54,7 +54,8 @@ using namespace std;
 
 PyInputParser::PyInputParser(string filename_):
 filename(filename_),
-python_initialised(Py_IsInitialized())
+python_initialised(Py_IsInitialized()),
+state(1)
 {
   Py_Initialize();
   stringstream ss;
@@ -70,13 +71,21 @@ python_initialised(Py_IsInitialized())
 }
 
 PyInputParser::PyInputParser(PyObject * dict_):
-python_initialised(Py_IsInitialized())
+python_initialised(Py_IsInitialized()),
+state(1)
 {
   dict=dict_;
 }
 
 PyInputParser::~PyInputParser()
 {
+  if(state)
+    close();
+}
+
+void PyInputParser::close()
+{
+  state=0;
   if(!python_initialised)
   {
     Py_DECREF(dict);
@@ -85,6 +94,8 @@ PyInputParser::~PyInputParser()
     Py_Finalize();
   }
 }
+
+
 
 int PyInputParser::parse_int(const std::string & item)
 {
