@@ -54,6 +54,7 @@ void initialise_electric_field(RVF & electric_field,
                                const std::vector<RSF> & ion_density,
                                const std::vector<int> & ion_valence,
                                const double & eps,
+                               const string & runsname,
                                const Grid & grid);
 
 
@@ -95,6 +96,7 @@ void minimise(RVF & electric_field,
               const std::vector<int> & ion_valence,
               const int & savingstep, 
               const Real & eps,
+              const string & runsname,
               const Grid & grid);
 
 //// DIFFERENTIAL OPERATORS ////
