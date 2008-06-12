@@ -68,8 +68,8 @@ void distribute_ionic_species(std::vector<RSF> & ion_density,
             ion_density[n](i,j,k)=delta_density;  
     cout << "  saving density..." << endl;
     std::stringstream ss;
-    ss << runsname << "_ion_density_" << n << "_initial";
-    vtkSave(ss.str(),ion_density[0],"density",grid);
+    ss << runsname << "_ion_" << n << "_density_0";
+    vtkSave(ss.str(),ion_density[n],ss.str(),grid);
   }
   cout << "... done." << endl;
 }
@@ -81,10 +81,11 @@ void initialise_electric_field(RVF & electric_field,
                                const std::vector<RSF> & ion_density,
                                const std::vector<int> & ion_valence,
                                const double & eps,
+                               const string & runsname,
                                const Grid & grid)
 {
   cout << "Initialising the electric field..." << endl;
-
+  
   //Initilise the field with zeros
   electric_field=RV(0,0,0);
   //Evaluate the total charge density (tcd)
@@ -166,7 +167,10 @@ void initialise_electric_field(RVF & electric_field,
       << "  Aborting..." << endl;
     exit(1);
   }
-
+  cout << " Saving..." << endl;
+  std::stringstream ss;
+  ss << runsname << "_electric_field_0";
+  vtkSave(ss.str(),electric_field,ss.str(),grid);
   cout << "...done." << endl;
 }
 
@@ -404,6 +408,7 @@ void minimise(RVF & electric_field,
               const std::vector<int> & ion_valence,
               const int & savingstep, 
               const Real & eps,
+              const string & runsname,
               const Grid & grid)
 {
   cout << "Minimising... " << endl;
@@ -432,15 +437,27 @@ void minimise(RVF & electric_field,
       for (int n=0;n<ion_density.size();++n)
       {
         std::stringstream ss;
-        ss << "ion_density_" << n << "_intermediate";
-        vtkSave(ss.str(),ion_density[n],"density",grid);
+        ss << runsname << "_ion_" << n << "_density_" << num_steps;
+        vtkSave(ss.str(),ion_density[n],ss.str(),grid);
       }
-      vtkSave("electric_field_intermediate",electric_field,"electric_field",grid);
+      std::stringstream ss;
+      ss << runsname << "_electric_field_" << num_steps;
+      vtkSave(ss.str(),electric_field,ss.str(),grid);
     }
       //Check for stop criterium
     if(fabs(delta_func)<eps)
       break;
   }
+  cout << " Saving final values..." << endl;
+  for (int n=0;n<ion_density.size();++n)
+  {
+    std::stringstream ss;
+    ss << runsname << "_ion_" << n << "_density_" << num_steps;
+    vtkSave(ss.str(),ion_density[n],ss.str(),grid);
+  }
+  std::stringstream ss;
+  ss << runsname << "_electric_field_" << num_steps;
+  vtkSave(ss.str(),electric_field,ss.str(),grid);
   cout << "...done." << endl;
 }
 
