@@ -43,9 +43,9 @@ using namespace ranlib;
 
 //Distribute ionic species
 void distribute_ionic_species(std::vector<RSF> & ion_density,
-                              const std::vector<double> & ion_number,
-                              const string & runsname,
-                              const Grid & grid)
+			      const std::vector<double> & ion_number,
+	 const string & runsname,
+  const Grid & grid)
 {
   cout << "Distributing ions species..." << endl;
   int nx(grid.nx());
@@ -63,9 +63,9 @@ void distribute_ionic_species(std::vector<RSF> & ion_density,
     cout << "  running nodes..." << endl;
     for (int i=0;i<grid.nx();++i)
       for (int j=0;j<grid.ny();++j)
-        for (int k=0;k<grid.nz();++k)
-          if(grid.point_type()(i,j,k)==1)
-            ion_density[n](i,j,k)=delta_density;  
+	for (int k=0;k<grid.nz();++k)
+	  if(grid.point_type()(i,j,k)==1)
+	    ion_density[n](i,j,k)=delta_density;  
     cout << "  saving density..." << endl;
     std::stringstream ss;
     ss << runsname << "_ion_" << n << "_density_0";
@@ -77,12 +77,12 @@ void distribute_ionic_species(std::vector<RSF> & ion_density,
 
 //Initialise the elctric field
 void initialise_electric_field(RVF & electric_field,
-                               const RSF & fixed_charge_density,
-                               const std::vector<RSF> & ion_density,
-                               const std::vector<int> & ion_valence,
-                               const double & eps,
-                               const string & runsname,
-                               const Grid & grid)
+			       const RSF & fixed_charge_density,
+	  const std::vector<RSF> & ion_density,
+   const std::vector<int> & ion_valence,
+   const double & eps,
+   const string & runsname,
+   const Grid & grid)
 {
   cout << "Initialising the electric field..." << endl;
   
@@ -101,8 +101,8 @@ void initialise_electric_field(RVF & electric_field,
   if (fabs(total_charge)>eps)
   {
     cout << "  The total charge must be zero, instead of "
-      << total_charge << ".\n"
-      << "  Aborting..." << endl;
+	<< total_charge << ".\n"
+	<< "  Aborting..." << endl;
     exit(1);
   }
   //Get some necessary grid parameters
@@ -122,7 +122,7 @@ void initialise_electric_field(RVF & electric_field,
     density(i,Range::all(),Range::all())-=mean_density;
     for(int j=0;j<ny;++j)
       for(int k=0;k<nz;++k)
-        electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density;
+	electric_field[0](i,j,k)=electric_field[0](i-1,j,k)+mean_density;
   }
   //geometric factors for Ex
   Real ds=grid.deltasx();
@@ -139,7 +139,7 @@ void initialise_electric_field(RVF & electric_field,
       mean_density=mean(density(i,j,Range::all()));
       density(i,j,Range::all())-=mean_density;
       for(int k=0;k<nz;++k)
-        electric_field[1](i,j,k)=electric_field[1](i,j-1,k)+mean_density;
+	electric_field[1](i,j,k)=electric_field[1](i,j-1,k)+mean_density;
     }
   }
     //geometric factors for Ey
@@ -148,11 +148,11 @@ void initialise_electric_field(RVF & electric_field,
   //Initialise Ez
   for(int i=0;i<nx;++i)
     for(int j=0;j<ny;++j)
-    {
-      electric_field[2](i,j,0)=0;
-      for(int k=1;k<nz;++k)
-        electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+density(i,j,k);
-    }  
+  {
+    electric_field[2](i,j,0)=0;
+    for(int k=1;k<nz;++k)
+      electric_field[2](i,j,k)=electric_field[2](i,j,k-1)+density(i,j,k);
+  }  
   //geometric factors for Ez
   ds=grid.deltasz();
   electric_field[2]*=dv/ds;
@@ -164,7 +164,7 @@ void initialise_electric_field(RVF & electric_field,
     cout << sum(divergence(electric_field,grid)) << endl;
     cout << sum(tcd) << endl;
     cout << "  The electric field doesn't obey the Gauss law. \n"
-      << "  Aborting..." << endl;
+	<< "  Aborting..." << endl;
     exit(1);
   }
   cout << " Saving..." << endl;
@@ -192,8 +192,8 @@ Real functional(RVF & electric_field,std::vector<RSF> ion_concentration)
 
 //Single loop move
 Real loop_move(RVF & electric_field,
-               const Grid & grid,
-               const Loop & loop)
+	       const Grid & grid,
+	const Loop & loop)
 {
   //Evaluate the trial field
   Real & e1 = electric_field(loop.node1()[0],loop.node1()[1],loop.node1()[2])[loop.dir1()];
@@ -220,19 +220,19 @@ Real loop_move(RVF & electric_field,
 
 //Lattice sweep
 Real sequential_sweep_loop_moves(RVF & electric_field,
-                                 const Grid & grid)
+				 const Grid & grid)
 {
   Real delta_func=0;
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k)
-        for (int loop_number=0;loop_number<3;++loop_number)
-        {
+	for (int loop_number=0;loop_number<3;++loop_number)
+  {
 	    //Create the loop
-          Loop loop(blitz::TinyVector<int,3>(i,j,k),loop_number,grid);
+    Loop loop(blitz::TinyVector<int,3>(i,j,k),loop_number,grid);
 	    //Perform the loop move
-          delta_func+=loop_move(electric_field,grid,loop);
-        }
+    delta_func+=loop_move(electric_field,grid,loop);
+  }
   return delta_func;
 }
 
@@ -243,35 +243,29 @@ Real sequential_sweep_loop_moves(RVF & electric_field,
 
 // ION MOVE ALONG SOME PATH //
 Real ion_move(RVF & electric_field,
-              RSF & concentration,
-              const int & ion_valence,
-              const Path & path,
-              const Grid & grid)
+	      RSF & concentration,
+       const int & ion_valence,
+       const IV & node,
+       const IV & dir,
+       const Grid & grid)
 {
 //Define nodes
-  IV node1(path(0));
-  //  IV node2(path(path.size()-1));
-  IV node2(path(1));
-  IV dif=node2;
-  dif-=node1;
-  int dir;
-  for(int ii=0;ii<3;++ii)
-    if(dif[ii]==1)
-      dir=ii;
+  IV node1(node);
+  node1=grid.intobox(node1);
+  IV node2(node1);
+  node2+=dir;
+  node2=grid.intobox(node2);
   
 //Do move only if both nodes
   //belong to region 1
   if ((grid.point_type()(node1[0],node1[1],node1[2])!=1)
-      ||(grid.point_type()(node2[0],node2[1],node2[2])!=1))
+       ||(grid.point_type()(node2[0],node2[1],node2[2])!=1))
     return 0;
   else
   {
     Real & c1 = concentration(node1[0],node1[1],node1[2]);
     Real & c2 = concentration(node2[0],node2[1],node2[2]);
-    
-    
-    Real & e = electric_field(node1[0],node1[1],node1[2])[path.direction_axis(0)];
-    
+    Real e = dot(electric_field(node1[0],node1[1],node1[2]),dir);
     
 //Check if concentration is negative
     if((c1<0)||(c2<0))
@@ -279,9 +273,8 @@ Real ion_move(RVF & electric_field,
       cout << "Concentrations cannot be negative. Aborting..." << endl;
       exit(1);
     }
-    Real deltas=grid.deltas(dir);
+    Real deltas=grid.deltas(0);
     Real deltac;
-    Real deltae;
     //Optimal concentration change
     //solve for the optimal concentration change with successive bisections
     Real a=-c2;
@@ -293,32 +286,31 @@ Real ion_move(RVF & electric_field,
     {
       while(1)
       {
-        Real c=.5*(a+b);
-        Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*c/deltas);
+	Real c=.5*(a+b);
+	Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*c/deltas);
         //cout << a << " " << b << " " << b-a <<" " << c << " " << fc << endl;
-        if((fc==0)||(b-a<1e-10))
-        {
-          deltac=c;
-          deltae=-ion_valence*deltac/deltas;
+	if((fc==0)||(b-a<1e-10))
+	{
+	  deltac=c;
         //cout << deltac << endl;
-          break;
-        }
-        else if(fa*fc<0)
-        {
-          b=c;
-          fb=fc;
-        }
-        else if(fb*fc<0)
-        {
-          a=c;
-          fa=fc;
-        }
-        else
-        {
+	  break;
+	}
+	else if(fa*fc<0)
+	{
+	  b=c;
+	  fb=fc;
+	}
+	else if(fb*fc<0)
+	{
+	  a=c;
+	  fa=fc;
+	}
+	else
+	{
         //cout << "Successive bisection method failed" << endl;
-          deltac=0;
-          break;
-        }    
+	  deltac=0;
+	  break;
+	}    
       }   
     }
     else
@@ -330,9 +322,10 @@ Real ion_move(RVF & electric_field,
     {
       UniformOpen<Real> rg;
       deltac=-c2+rg.random()*(c1+c2);
-      deltae=-ion_valence*deltac/deltas;
     }
 #endif
+//Evaluate the change in the electric field
+    Real deltae=-ion_valence*deltac/deltas;
       //Evaluate the change in the functional
     Real delta_func=deltafunc(deltac,c1,c2,e,deltae);
     //cout << "delta_func: " << delta_func << endl;
@@ -340,18 +333,18 @@ Real ion_move(RVF & electric_field,
     if (delta_func<0)
     {
       //cout << "delta_func: " << delta_func << endl;
-      e+=deltae;
       c1-=deltac;
       c2+=deltac; 
+	electric_field(node1[0],node1[1],node1[2])+=deltae*dir;
       return delta_func;
     }
     else
       return 0;
   }
 }
-
+                       
 //Variation of the functional for ion moves
-Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
+                       Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
 {
   if(c1==0&&c2==0)
     return (e+.5*deltae)*deltae-deltac*log(-deltac)+deltac*log(deltac);
@@ -362,10 +355,10 @@ Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real 
   else
     return (e+.5*deltae)*deltae+c1*log(1-deltac/c1)+c2*log(1+deltac/c2)-deltac*log(c1-deltac)+deltac*log(c2+deltac);
 }
-
+                       
 //Derivative with respect to the charge variation
 //of the variation of the functional for ion moves
-Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
+                       Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae)
 {
   Real earg=(e+deltae)*deltae/deltac;
   Real exp_earg=exp(-fabs(earg));
@@ -377,39 +370,37 @@ Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, 
   else
     return deltac-(c1-c2)/2.;
 }
-
+                       
 //Lattice sweep
-Real sequential_sweep_ion_moves(RVF & electric_field,
-                                RSF & concentration,
-                                const int & ion_valence,
-                                const Grid & grid)
+                       Real sequential_sweep_ion_moves(RVF & electric_field,
+			   RSF & concentration,
+      const int & ion_valence,
+      const Grid & grid)
 {
   Real delta_func=0;
   for (int i=0;i<grid.nx();++i)
     for (int j=0;j<grid.ny();++j)
       for (int k=0;k<grid.nz();++k) 
-        for (int m=0;m<3;++m)
-        {
-          //Generate the path
-          Path path(IV(i,j,k),m,grid);
+	for (int m=0;m<3;++m)
+  {
           //Perform the concentration move
-          delta_func+=ion_move(electric_field,concentration,ion_valence,path,grid);
-        }
+    delta_func+=ion_move(electric_field,concentration,ion_valence,IV(i,j,k),unit_vector(m),grid);
+  }
   return delta_func;
 }
-
+                       
 ////////////////////////////////////////////
-
-
+                       
+                       
 //// MINIMISE ////
-
-void minimise(RVF & electric_field,
-              std::vector<RSF> & ion_density,
-              const std::vector<int> & ion_valence,
-              const int & savingstep, 
-              const Real & eps,
-              const string & runsname,
-              const Grid & grid)
+                       
+                       void minimise(RVF & electric_field,
+				     std::vector<RSF> & ion_density,
+	 const std::vector<int> & ion_valence,
+  const int & savingstep, 
+  const Real & eps,
+  const string & runsname,
+  const Grid & grid)
 {
   cout << "Minimising... " << endl;
   int num_steps=0;
@@ -429,16 +420,16 @@ void minimise(RVF & electric_field,
     func+=delta_func;
       //Print iteration infos
     cout << " Minimisation step: " << num_steps << "\t"
-      << "Variation in functional: " << delta_func << "\t"
-      << "Functional: " << func << endl;
+	<< "Variation in functional: " << delta_func << "\t"
+	<< "Functional: " << func << endl;
   //Save fields
     if(num_steps%savingstep==0)
     {
       for (int n=0;n<ion_density.size();++n)
       {
-        std::stringstream ss;
-        ss << runsname << "_ion_" << n << "_density_" << num_steps;
-        vtkSave(ss.str(),ion_density[n],ss.str(),grid);
+	std::stringstream ss;
+	ss << runsname << "_ion_" << n << "_density_" << num_steps;
+	vtkSave(ss.str(),ion_density[n],ss.str(),grid);
       }
       std::stringstream ss;
       ss << runsname << "_electric_field_" << num_steps;
@@ -460,12 +451,12 @@ void minimise(RVF & electric_field,
   vtkSave(ss.str(),electric_field,ss.str(),grid);
   cout << "...done." << endl;
 }
-
-
+                       
+                       
 //// DIFFERENTIAL OPERATORS ////
-
+                       
 //Divergence
-RSF divergence(const RVF & field,const Grid & grid)
+                       RSF divergence(const RVF & field,const Grid & grid)
 {
   RSF div(field.shape());
   div=0;
@@ -475,26 +466,27 @@ RSF divergence(const RVF & field,const Grid & grid)
   for(int i=0;i<nx;++i)
     for(int j=0;j<ny;++j)
       for(int k=0;k<nz;++k)
-      {
-        Real divx,divy,divz;
-        if (i==0)
-          divx=field[0](i,j,k)-field[0](nx-1,j,k);
-        else
-          divx=field[0](i,j,k)-field[0](i-1,j,k);
-        divx/=grid.deltax();
-        if (j==0)
-          divy=field[1](i,j,k)-field[1](i,ny-1,k);
-        else
-          divy=field[1](i,j,k)-field[1](i,j-1,k);
-        divy/=grid.deltay();
-        if (k==0)
-          divz=field[2](i,j,k)-field[2](i,j,nz-1);
-        else
-          divz=field[2](i,j,k)-field[2](i,j,k-1);
-        divz/=grid.deltaz();
-        div(i,j,k)=divx+divy+divz;
-      }
+  {
+    Real divx,divy,divz;
+    if (i==0)
+      divx=field[0](i,j,k)-field[0](nx-1,j,k);
+    else
+      divx=field[0](i,j,k)-field[0](i-1,j,k);
+    divx/=grid.deltax();
+    if (j==0)
+      divy=field[1](i,j,k)-field[1](i,ny-1,k);
+    else
+      divy=field[1](i,j,k)-field[1](i,j-1,k);
+    divy/=grid.deltay();
+    if (k==0)
+      divz=field[2](i,j,k)-field[2](i,j,nz-1);
+    else
+      divz=field[2](i,j,k)-field[2](i,j,k-1);
+    divz/=grid.deltaz();
+    div(i,j,k)=divx+divy+divz;
+  }
   return div;
 }
-
+                       
 ///////////////////////////////////////////////
+                       

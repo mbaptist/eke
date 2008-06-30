@@ -1,7 +1,5 @@
-// -*- C++ -*-
-
 //
-// C++ Interface: types
+// C++ Implementation: coord
 //
 // Description: 
 //
@@ -31,57 +29,12 @@ You should have received a copy of the GNU General Public License
 along with eke.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TYPES_HPP
-#define TYPES_HPP
+#include "coord.hpp"
+#include "types.hpp"
 
-typedef long double Real;
-
-
-//// BLITZ ////
-#define USE_BLITZ
-//#define USE_CAT
-
-#ifdef USE_BLITZ
-
-#include <blitz/blitz.h>
-#include <blitz/array.h>
-#include <blitz/tiny.h>
-#include <blitz/tinyvec.h>
-#include <blitz/tinyvec-et.h>
-
-using namespace blitz;
-
-BZ_DECLARE_FUNCTION_RET(norm,Real)
-BZ_DECLARE_FUNCTION2_RET(dot,Real)
-
-//Types
-//Integer vector
-typedef blitz::TinyVector<int,3> IV;
-//Integer scalar field
-typedef blitz::Array<int,3> ISF;
-//Real vector
-typedef blitz::TinyVector<Real,3> RV;
-//Real scalar field
-typedef blitz::Array<Real,3> RSF;
-//Real vector field
-typedef blitz::Array<RV,3> RVF;
-
-
-
-#endif
-////    ////
-
-
-//// CAT ////
-#ifdef USE_CAT
-
-
-
-#endif
-////    ////
-
-
-
-
-
-#endif
+IV unit_vector(const int & index)
+{
+  IV uv(0,0,0);
+  uv[index]=1;
+  return uv;
+};

@@ -211,14 +211,9 @@ public:
       node2_+=blitz::TinyVector<int,3>(0,1,0);
       node3_+=blitz::TinyVector<int,3>(1,1,0);
       node4_+=blitz::TinyVector<int,3>(1,0,0);
-      if(node2_[1]==ny)
-        node2_[1]=0;
-      if(node3_[0]==nx)
-        node3_[0]=0;
-      if(node3_[1]==ny)
-        node3_[1]=0;
-      if(node4_[0]==nx)
-        node4_[0]=0;
+      node2_=_grid_.intobox(node2_);
+      node3_=_grid_.intobox(node3_);
+      node4_=_grid_.intobox(node4_);
       dir1_=1;
       dir2_=0;
     }
@@ -227,14 +222,9 @@ public:
       node2_+=blitz::TinyVector<int,3>(0,0,1);
       node3_+=blitz::TinyVector<int,3>(1,0,1);
       node4_+=blitz::TinyVector<int,3>(1,0,0);
-      if(node2_[2]==nz)
-        node2_[2]=0;
-      if(node3_[0]==nx)
-        node3_[0]=0;
-      if(node3_[2]==nz)
-        node3_[2]=0;
-      if(node4_[0]==nx)
-        node4_[0]=0;
+      node2_=_grid_.intobox(node2_);
+      node3_=_grid_.intobox(node3_);
+      node4_=_grid_.intobox(node4_);
       dir1_=2;
       dir2_=0;
     }
@@ -243,14 +233,9 @@ public:
       node2_+=blitz::TinyVector<int,3>(0,0,1);
       node3_+=blitz::TinyVector<int,3>(0,1,1);
       node4_+=blitz::TinyVector<int,3>(0,1,0);
-      if(node2_[2]==nz)
-        node2_[2]=0;
-      if(node3_[1]==ny)
-        node3_[1]=0;
-      if(node3_[2]==nz)
-        node3_[2]=0;
-      if(node4_[1]==ny)
-        node4_[1]=0;
+      node2_=_grid_.intobox(node2_);
+      node3_=_grid_.intobox(node3_);
+      node4_=_grid_.intobox(node4_);
       dir1_=2;
       dir2_=1;
     }	 
@@ -272,8 +257,7 @@ class Path
 private:
   std::vector<IV> path_;
   int size_;
-  std::vector<IV> direction_;
-  std::vector<int> direction_axis_;
+  const Grid & grid_;
   
   //Accessors
   
@@ -281,16 +265,23 @@ public:
   const std::vector<IV> & operator()(){return path_;};
   const IV & operator()(const int & n){return path_[n];}
   const int & size(){return size_;};
-  const std::vector<IV> & direction(){return direction_;};
-  const IV & direction(const int & n){return direction_[n];};
-  const int & direction_axis(const int & n){direction_axis_[n];};
+  const IV direction(const int & n)
+	{
+	IV dir(path_[n+1]);
+	dir-=path_[n];
+	return grid_.intobox(dir);
+};
     
   const std::vector<IV> & operator()() const {return path_;};
   const IV & operator()(const int & n) const {return path_[n];}
   const int & size() const {return size_;};
-  const std::vector<IV> & direction() const {return direction_;};
-  const IV & direction(const int & n) const {return direction_[n];};
-  const int & direction_axis(const int & n) const {direction_axis_[n];};
+  const IV direction(const int & n) const 
+{
+	IV dir(path_[n+1]);
+	dir-=path_[n];
+	return grid_.intobox(dir);
+};
+
   
   //Ctors
 public:
@@ -320,18 +311,16 @@ public:
     
   };
 #endif
-  Path(const IV & _node1_,const int & _dir_,const Grid & grid)
+  Path(const IV & _node1_,const IV & _dir_,const Grid & _grid_):
+    grid_(_grid_)
   {
     path_.push_back(_node1_);
-    direction_axis_.push_back(_dir_);
-    direction_.push_back(IV(0,0,0)); 
-    direction_[0][direction_axis_[0]]=1;
     IV node2(_node1_);
-    node2+=direction_[0];
+    node2+=_dir_;
     //Apply periodic boundary
-    node2=grid.intobox(node2);
+    node2=_grid_.intobox(node2);
     path_.push_back(node2);
-    size_=2;
+    size_=path_.size();
   };
   //Dtor
      ~Path(){};
@@ -342,7 +331,6 @@ private:
   
   
 };
-
 
 
 #endif

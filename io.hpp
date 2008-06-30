@@ -40,8 +40,8 @@
 //It is responsible for reading the configuration file and
 //seting the Input parameters
 
-#ifndef INPUT_HPP
-#define INPUT_HPP
+#ifndef IO_HPP
+#define IO_HPP
 
 #include <Python.h>
 

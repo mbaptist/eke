@@ -40,7 +40,7 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 
-
+#include "coord.hpp"
 
 //// INITIALISATIONS ////
 //Distribute ionic species
@@ -48,6 +48,7 @@ void distribute_ionic_species(std::vector<RSF> & ion_density,
                               const std::vector<double> & ion_number,
                               const string & runsname,
                               const Grid & grid);
+                              
 //Initialise the electric field
 void initialise_electric_field(RVF & electric_field,
                                const RSF & fixed_charge_density,
@@ -77,7 +78,8 @@ Real sequential_sweep_loop_moves(RVF & electric_field,
 Real ion_move(RVF & electric_field,
               RSF & concentration,
               const int & ion_valence,
-              const Path & path,
+              const IV & node,
+	      const IV & dir,
               const Grid & grid);
 //Variation of the functional for ion moves
 Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae);

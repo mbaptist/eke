@@ -111,7 +111,7 @@ int main(int argc, char * argv[])
   //Fixed charges (colloidal charges)
   RSF colloid_charge_density(nx,ny,nz);
   colloid_charge_density=0;
-#if 0
+#if 1
   UniformClosedOpen<Real> rgco;
   UniformClosed<Real> rgc;
   //number of points to represent the sphere surface
@@ -120,17 +120,18 @@ int main(int argc, char * argv[])
   Real delta_density=(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {
-    Real theta=rgc.random()*M_PI;
+    Real z=-1.+rgc.random()*2.;
     Real phi=rgco.random()*2.*M_PI;
-    RV coord_ps(rs*cos(phi)*sin(theta),
-                rs*sin(phi)*sin(theta),
-                rs*cos(theta));
+    Real rsintheta=sqrt(rs*rs-z*z);
+    RV coord_ps(rsintheta*cos(phi),
+                rsintheta*sin(phi),
+                z);
     IV ind_np=grid.nearest_point_index(coord_ps);	
     colloid_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_density;
     grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
   } 
 #endif
-
+# if 0
 int NN=1000;
 
 Real delta_density=(colloid_valence/grid.deltav());
@@ -152,6 +153,7 @@ Real phi=mm*2.*M_PI/MM;
   }
 }
 colloid_charge_density/=np;
+#endif
 
   //Save the fixed charge density
   std::stringstream ss;
