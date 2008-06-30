@@ -1,11 +1,15 @@
 # KDevelop Custom Project File List
 Makefile
+coord.cpp
+coord.hpp
 geometry.hpp
 grid.hpp
 io.cpp
 io.hpp
 maggs.cpp
 maggs.hpp
+na.cpp
+na.hpp
 p_spherical_capacitor.cpp
 pb_colloid.cpp
 pb_double_plane.cpp
