@@ -144,7 +144,7 @@ int main(int argc, char * argv[])
   initialise_electric_field(electric_field,fixed_charge_density,ion_density,ion_valence,eps,runsname,grid);
   
   //Minimise
-  minimise(electric_field,ion_density,ion_valence,savingstep,eps,runsname,grid);
+  //minimise(electric_field,ion_density,ion_valence,savingstep,eps,runsname,grid);
   
   blitz::Array<Real,1> c_eke(nx);
   c_eke=ion_density[0](Range::all(),0,0);
@@ -155,22 +155,21 @@ int main(int argc, char * argv[])
   Real s0=1.;
   while(1)
   {
-    s=-.5*sigma*ion_valence[0]*xright/atan(s0);
+    s=atan(-.5*sigma*ion_valence[0]*xright/s0);
     //cout << s << endl;
     if(fabs(s-s0)<1e-16)
       break;
 	s0=s;
   }
-  
-  s=atan(s);
-  //cout << s << endl;
+
+  cout << s << endl;
 
   ofstream ooo("comp.dat");
 
   for(int i=0;i<nx;++i)
   {
     Real x=-.5*lx+grid.deltax()*i;
-    c_a(i)=2.*pow(s/(ion_valence[0]*xright),2)*pow(cos(s*x/xright),-2);
+    c_a(i)=2.*pow(s/(ion_valence[0]*xright),2)/pow(cos(s*x/xright),2);
     ooo << x << " " << c_a(i) << " " << c_eke(i) << endl;
     //cout << x << " " << c_a(i) << " " << c_eke(i) << endl;
   }
