@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
   Real delta_density=(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {
-    Real z=-1.+rgc.random()*2.;
+    Real z=rs*(-1.+rgc.random()*2.);
     Real phi=rgco.random()*2.*M_PI;
     Real rsintheta=sqrt(rs*rs-z*z);
     RV coord_ps(rsintheta*cos(phi),

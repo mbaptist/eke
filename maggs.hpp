@@ -48,29 +48,26 @@ void distribute_ionic_species(std::vector<RSF> & ion_density,
                               const std::vector<double> & ion_number,
                               const string & runsname,
                               const Grid & grid);
-                              
+
 //Initialise the electric field
 void initialise_electric_field(RVF & electric_field,
                                const RSF & fixed_charge_density,
                                const std::vector<RSF> & ion_density,
                                const std::vector<int> & ion_valence,
-                               const double & eps,
+                               const Real & eps,
                                const string & runsname,
                                const Grid & grid);
 
 
 //// FUNCTIONAL ////
-Real functional(RVF & electric_field,std::vector<RSF> ion_concentration);
+Real functional(const RVF & electric_field,const std::vector<RSF> ion_concentration);
 
 
 //// LOOP MOVES ////
 //Single loop move
-Real loop_move(RVF & electric_field,
-               const Grid & grid,
-               const Loop & loop);
+Real loop_move(RVF & electric_field,const Loop & loop);
 //Lattice sweep
-Real sequential_sweep_loop_moves(RVF & electric_field,
-                                 const Grid & grid);
+Real sequential_sweep_loop_moves(RVF & electric_field,const Grid & grid);
 
 
 //// ION MOVES ////
@@ -79,17 +76,19 @@ Real ion_move(RVF & electric_field,
               RSF & concentration,
               const int & ion_valence,
               const IV & node,
-	      const IV & dir,
+              const int & dir,
+              const Real & eps,
               const Grid & grid);
 //Variation of the functional for ion moves
-Real deltafunc(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae);
+Real deltafunc(const Real & deltac,const Real & deltae,const Real & c1, const Real & c2, const Real & e);
 //Derivative with respect to the charge variation
 //of the variation of the functional for ion moves
-Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e,const Real & deltae);
+Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e, const Real & d_deltae_d_deltac);
 //Lattice sweep
 Real sequential_sweep_ion_moves(RVF & electric_field,
                                 RSF & concentration,
                                 const int & ion_valence,
+                                const Real & eps,
                                 const Grid & grid);
 //// MINIMISE ////
 

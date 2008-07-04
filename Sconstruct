@@ -5,7 +5,7 @@ pyver=sys.version[:3]
 incs=['/usr/include/python'+pyver]
 libs=['python'+pyver]
 
-env = Environment(CPPPATH=incs,CCFLAGS='-O3')
+env = Environment(CPPPATH=incs,CCFLAGS='-O2')
 
 sources=['io.cpp','maggs.cpp','coord.cpp']
 env.Object(sources)
