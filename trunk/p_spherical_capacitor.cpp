@@ -87,7 +87,7 @@ int main(int argc, char * argv[])
   //Close input file
   input.close();
   
-  
+#if 0
   //Rescaling to non-dimensional units
   double k=sqrt(4.*M_PI*lb*fabs(colloid_valence)/(lx*ly*lz));
   colloid_valence*=4.*M_PI*lb*k;
@@ -98,6 +98,7 @@ int main(int argc, char * argv[])
   lz*=k;
   ris*=k;
   ros*=k;
+#endif  
   
   //Grid
   Grid grid(nx,ny,nz,lx,ly,lz);
@@ -108,29 +109,46 @@ int main(int argc, char * argv[])
   //Fixed charges	
   RSF fixed_charge_density(nx,ny,nz);
   fixed_charge_density=0;
-  UniformClosed<Real> rg;
+  UniformClosedOpen<double> rgco;
+  UniformClosed<double> rgc;
+  //Inner sphere  
   //number of points to represent the sphere surface
   //100 per grid unit area
-  int np=100*static_cast<int>(4*M_PI*pow(ros,2)/grid.deltasx());
-  //cout << np << endl;
+  int np=10000*static_cast<int>(4*M_PI*pow(ris,2)/grid.deltasx());
   Real delta_density=(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {
-    Real theta=rg.random()*M_PI;
-    Real phi=rg.random()*2.*M_PI;
-    //Inner sphere
-    RV coord_ps(ris*cos(phi)*sin(theta),
-                ris*sin(phi)*sin(theta),
-                ris*cos(theta));
+    Real costheta=-1.+rgc.random()*2.;
+    Real phi=rgco.random()*2.*M_PI;
+    Real sintheta=sqrt(1.-costheta*costheta);
+    RV coord_ps(sintheta*cos(phi),
+                sintheta*sin(phi),
+                costheta);
+    coord_ps*=ris;
     IV ind_np=grid.nearest_point_index(coord_ps);	
     fixed_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_density;
-    //Outer sphere
-    coord_ps=RV(ros*cos(phi)*sin(theta),
-                ros*sin(phi)*sin(theta),
-                ros*cos(theta));
-    ind_np=grid.nearest_point_index(coord_ps);	
-    fixed_charge_density(ind_np[0],ind_np[1],ind_np[2])-=delta_density;
-  }
+    grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
+  } 
+  //Outer sphere  
+  //number of points to represent the sphere surface
+  //10000 per grid unit area
+  np=10000*static_cast<int>(4*M_PI*pow(ros,2)/grid.deltasx());
+  delta_density=-(colloid_valence/grid.deltav())/np;
+  for(int n=0;n<np;++n)
+  {
+    Real costheta=-1.+rgc.random()*2.;
+    Real phi=rgco.random()*2.*M_PI;
+    Real sintheta=sqrt(1.-costheta*costheta);
+    RV coord_ps(sintheta*cos(phi),
+                sintheta*sin(phi),
+                costheta);
+    coord_ps*=ros;
+    IV ind_np=grid.nearest_point_index(coord_ps);	
+    fixed_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_density;
+    grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
+  } 
+
+  
   //Save the fixed charge density
   std::stringstream ss;
   ss << runsname << "_fixed_charge_density";
@@ -149,6 +167,10 @@ int main(int argc, char * argv[])
   RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,fixed_charge_density,ion_density,ion_valence,eps,runsname,grid);
   
+  
+  RVF electric_field_init(electric_field.copy());
+  
+#if 1
   //Minimise
   //minimise(electric_field,ion_density,ion_valence,100,eps,grid);
   //Minimise only for the electric field
@@ -160,15 +182,15 @@ int main(int argc, char * argv[])
   while(1)
   {
     ++num_steps;
-    Real delta_func=0;
-      //Field moves
-    delta_func+=sequential_sweep_loop_moves(electric_field,grid);
+    //Field moves
+    Real delta_func=sequential_sweep_loop_moves(electric_field,grid);
       //Update the functional
     func+=delta_func;
       //Print iteration infos
     cout << " Minimisation step: " << num_steps << "\t"
       << "Variation in functional: " << delta_func << "\t"
       << "Functional: " << func << endl;
+    // cout << sum(divergence(electric_field,grid)) << endl;
   //Save field
     if(num_steps%savingstep==0)
     {
@@ -179,12 +201,55 @@ int main(int argc, char * argv[])
       //Check for stop criterium
     if(fabs(delta_func)<eps)
       break;
-    //Save final values of the field and concentrations
-    std::stringstream ss;
-    ss << runsname << "_electric_field_" << num_steps;
-    vtkSave(ss.str(),electric_field,ss.str(),grid);
   }
+    //Save final values of the field and concentrations
+  std::stringstream sss;
+  sss << runsname << "_electric_field_" << num_steps;
+  vtkSave(sss.str(),electric_field,ss.str(),grid);
   cout << "...done." << endl;
-    
+#endif
+  
+  
+  //Test
+  
+  RVF electric_field_a(nx,ny,nz);
+  electric_field_a=RV(0,0,0);;
+  for (int i=0;i<grid.nx();++i)
+    for (int j=0;j<grid.ny();++j)
+      for (int k=0;k<grid.nz();++k)
+      {
+        RV coord=grid.coordinates(i,j,k);
+        Real ncoord=norm(coord);
+        RV unit_vector_r=coord/ncoord;
+        //cout << coord << endl;
+        if(ncoord>ris&&ncoord<ros)
+        {
+          electric_field_a(i,j,k)=colloid_valence/(4.*M_PI*ncoord*ncoord)*unit_vector_r;
+          //cout << electric_field_a(i,j,k) << endl;
+        }
+        else
+        {
+          electric_field_a(i,j,k)=RV(0,0,0);
+        }
+      }
+  std::stringstream ssss;
+  ssss << runsname << "_electric_field_analytic";
+  vtkSave(ssss.str(),electric_field_a,"electric_field_analytic",grid);
+  
+  cout << electric_field(Range::all(),ny/2,nz/2)[0] << endl;
+  cout << endl;
+  cout << electric_field_a(Range::all(),ny/2,nz/2)[0] << endl;
+  
+  ofstream efcut("efcut.dat");
+  
+  for(int n=0;n<electric_field(Range::all(),ny/2,nz/2)[0].size();++n)
+    efcut << electric_field(Range::all(),ny/2,nz/2)[0](n) << " " 
+    << electric_field_a(Range::all(),ny/2,nz/2)[0](n) << endl;
+  
+  RVF electric_field_comp(electric_field_a.copy());
+  electric_field_comp-=electric_field;
+  cout << sum(dot(electric_field_comp,electric_field_comp))*grid.deltav() << endl;
+  
+  
   return 0;
 }
