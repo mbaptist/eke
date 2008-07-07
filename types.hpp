@@ -34,7 +34,9 @@ along with eke.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-typedef long double Real;
+//typedef float Real;
+typedef double Real;
+//typedef long double Real;
 
 
 //// BLITZ ////

@@ -237,87 +237,80 @@ Real sequential_sweep_loop_moves(RVF & electric_field,const Grid & grid)
 Real ion_move(RVF & electric_field,
               RSF & concentration,
               const int & ion_valence,
-              const IV & node,
+              const IV & node1,
               const int & dir,
               const Real & eps,
               const Grid & grid)
 {
-//Define nodes
-  IV node1(node);
-  grid.intobox(node1);
-  IV node2(node1);
-  node2+=unit_vector(dir);
-  grid.intobox(node2);
-  
-//Do move only if both nodes
-  //belong to region 1
-  if ((grid.point_type()(node1[0],node1[1],node1[2])!=1)
-      ||(grid.point_type()(node2[0],node2[1],node2[2])!=1))
+  //Check if node 1 belongs to region 1
+  if (grid.point_type()(node1[0],node1[1],node1[2])!=1)
     return 0;
+  //Define node2
+  IV node2(node1+unit_vector(dir));
+  grid.intobox(node2);
+  //Check if node 2 belongs to region 1
+  if (grid.point_type()(node2[0],node2[1],node2[2])!=1)
+    return 0;
+  //Define references to the field and concentrations
+  Real & c1 = concentration(node1[0],node1[1],node1[2]);
+  Real & c2 = concentration(node2[0],node2[1],node2[2]);
+  Real & e = electric_field(node1[0],node1[1],node1[2])[dir];
+//Check if concentration is negative
+  if((c1<0)||(c2<0))
+  {
+    cout << "Concentrations cannot be negative. Aborting..." << endl;
+    exit(1);
+  }
+  //Define concentration change
+  Real deltac;
+    //Determine the optimal concentration change
+    //solve for the optimal concentration change with successive bisections
+  Real a=-c2;
+  Real fa=d_deltafunc_d_deltac(a,c1,c2,e,-ion_valence*grid.deltal(dir));
+  Real b=c1;
+  Real fb=d_deltafunc_d_deltac(b,c1,c2,e,-ion_valence*grid.deltal(dir));
+    //cout << fa << " " << fb << endl;
+  if(fa*fb<0)
+  {
+    while(1)
+    {
+      Real c=.5*(a+b);
+      Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*grid.deltal(dir));
+        //cout << a << " " << b << " " << b-a <<" " << c << " " << fc << endl;
+      if((fc==0)||(b-a<eps))
+      {
+        deltac=c;
+        break;
+      }
+      else if(fa*fc<0)
+      {
+        b=c;
+        fb=fc;
+      }
+      else
+      {
+        a=c;
+        fa=fc;
+      }
+    }   
+  }
   else
   {
-    Real & c1 = concentration(node1[0],node1[1],node1[2]);
-    Real & c2 = concentration(node2[0],node2[1],node2[2]);
-    Real & e = electric_field(node1[0],node1[1],node1[2])[dir];
-    
-//Check if concentration is negative
-    if((c1<0)||(c2<0))
-    {
-      cout << "Concentrations cannot be negative. Aborting..." << endl;
-      exit(1);
-    }
-    Real deltas=grid.deltas(0);
-    Real deltac;
-    //Optimal concentration change
-    //solve for the optimal concentration change with successive bisections
-    Real a=-c2;
-    Real fa=d_deltafunc_d_deltac(a,c1,c2,e,-ion_valence*grid.deltal(dir));
-    Real b=c1;
-    Real fb=d_deltafunc_d_deltac(b,c1,c2,e,-ion_valence*grid.deltal(dir));
-    //cout << fa << " " << fb << endl;
-    if(fa*fb<0)
-    {
-      while(1)
-      {
-        Real c=.5*(a+b);
-        Real fc=d_deltafunc_d_deltac(c,c1,c2,e,-ion_valence*grid.deltal(dir));
-        //cout << a << " " << b << " " << b-a <<" " << c << " " << fc << endl;
-        if((fc==0)||(b-a<eps))
-        {
-          deltac=c;
-          break;
-        }
-        else if(fa*fc<0)
-        {
-          b=c;
-          fb=fc;
-        }
-        else
-        {
-          a=c;
-          fa=fc;
-        }
-      }   
-    }
-    else
-    {
-      cout << "Successive bisection method failed" << endl;
-      exit(1);
-    }
-    //Evaluate the change in the electric field
-    Real deltae=-ion_valence*deltac*grid.deltal(dir);
-    //Evaluate the change in the functional
-    Real delta_func=deltafunc(deltac,deltae,c1,c2,e);
-    //cout << "delta_func: " << delta_func << endl;
-    
-    //Update the concentrations
-    c1-=deltac;
-    c2+=deltac; 
-    //Update the field
-    e+=deltae;
-    return delta_func;
-   
+    cout << "Successive bisection method failed" << endl;
+    exit(1);
   }
+  //Evaluate the change in the electric field
+  Real deltae=-ion_valence*deltac*grid.deltal(dir);
+  //Evaluate the change in the functional
+  Real delta_func=deltafunc(deltac,deltae,c1,c2,e);
+  //cout << "delta_func: " << delta_func << endl;
+  //Update the concentrations
+  c1-=deltac;
+  c2+=deltac; 
+  //Update the field
+  e+=deltae;
+  //Return the change in the functional
+  return delta_func;
 }
 
 //Variation of the functional for ion moves
