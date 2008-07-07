@@ -158,10 +158,6 @@ PyObject * PyInputParser::pval(const std::string & item)
 }
 
 
-
-
-#if 1
-
 void vtkSave(const std::string & filename,const RSF & field,const std::string & fieldname,const Grid & grid)
 {
   ofstream ofs((filename+".vtk").c_str());
@@ -209,5 +205,3 @@ void vtkSave(const std::string & filename,const RVF & field,const std::string & 
         ofs << endl;
       }
 }
-
-#endif

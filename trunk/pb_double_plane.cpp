@@ -169,8 +169,9 @@ int main(int argc, char * argv[])
   for(int i=0;i<nx;++i)
   {
     Real x=-.5*lx+grid.deltax()*i;
-    if(x>=xleft&&x<=xright)
-      c_a(i)=2.*pow(s/(ion_valence[0]*xright),2)/pow(cos(s*x/xright),2);
+    if(x>xleft&&x<xright)
+c_a(i)=1./grid.deltax()*2.*s/(xright*pow(1.*ion_valence[0],2))*(tan(s*(x+.5*grid.deltax())/xright)-tan(s*(x-.5*grid.deltax())/xright));
+      //c_a(i)=2.*pow(s/(ion_valence[0]*xright),2)/pow(cos(s*x/xright),2);
     else
       c_a(i)=0;
     ooo << x << " " << c_a(i) << " " << c_eke(i) << endl;

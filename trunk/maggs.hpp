@@ -75,7 +75,7 @@ Real sequential_sweep_loop_moves(RVF & electric_field,const Grid & grid);
 Real ion_move(RVF & electric_field,
               RSF & concentration,
               const int & ion_valence,
-              const IV & node,
+              const IV & node1,
               const int & dir,
               const Real & eps,
               const Grid & grid);
