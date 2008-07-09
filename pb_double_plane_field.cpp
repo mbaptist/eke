@@ -122,13 +122,13 @@ int main(int argc, char * argv[])
   int ileft=grid.nearest_point_index(RV(xleft,0,0))[0];
   int iright=grid.nearest_point_index(RV(xright,0,0))[0];
   //Number of points in both planes
-  int np=2*grid.ny()*grid.nz();
+  int np=grid.ny()*grid.nz();
   Real delta_density=(numberoffixedcharges/grid.deltav())/np;
   for (int j=0;j<grid.ny();++j)
     for (int k=0;k<grid.nz();++k)
     {
       fixed_charge_density(ileft,j,k)=delta_density;
-      fixed_charge_density(iright,j,k)=delta_density;
+      fixed_charge_density(iright,j,k)=-delta_density;
     }
   //Save the fixed charge density
   std::stringstream ss;
@@ -137,57 +137,89 @@ int main(int argc, char * argv[])
   
   //Distribute ionic species	
   std::vector<RSF> ion_density;
-  distribute_ionic_species(ion_density,ion_number,runsname,grid);
+  //distribute_ionic_species(ion_density,ion_number,runsname,grid);
+  ion_density.push_back(RSF(nx,ny,nz));
+  ion_density[0]=0;
   
   //electric field
   RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,fixed_charge_density,ion_density,ion_valence,eps,runsname,grid);
-  
+ 
+#if 1
   //Minimise
-  minimise(electric_field,ion_density,ion_valence,savingstep,eps,runsname,grid);
-  
-  blitz::Array<Real,1> c_eke(nx);
-  c_eke=ion_density[0](Range::all(),ny/2,nz/2);
-  blitz::Array<Real,1> c_a(nx);
-  blitz::Array<Real,1> c_a_av(nx);
-  
-  Real sigma=numberoffixedcharges/2./(ly*lz);
-  cout << "Sigma: " << sigma << endl;
-  Real s;
-  Real s0=1.;
+  //minimise(electric_field,ion_density,ion_valence,100,eps,grid);
+  //Minimise only for the electric field
+  cout << "Minimising... " << endl;
+  int num_steps=0;
+  Real func0=.5*sum(dot(electric_field,electric_field));
+  cout << " Initial value of the functional: " << func0 << endl;
+  Real func=func0;
   while(1)
   {
-    s=atan(-.5*sigma*ion_valence[0]*xright/s0);
-    //cout << s << endl;
-    if(fabs(s-s0)<eps)
+    ++num_steps;
+    //Field moves
+    Real delta_func=sequential_sweep_loop_moves(electric_field,grid);
+      //Update the functional
+    func+=delta_func;
+      //Print iteration infos
+    cout << " Minimisation step: " << num_steps << "\t"
+      << "Variation in functional: " << delta_func << "\t"
+      << "Functional: " << func << endl;
+    // cout << sum(divergence(electric_field,grid)) << endl;
+  //Save field
+    if(num_steps%savingstep==0)
+    {
+      std::stringstream ss;
+      ss << runsname << "_electric_field_" << num_steps;
+      vtkSave(ss.str(),electric_field,ss.str(),grid);
+    }
+      //Check for stop criterium
+    if(fabs(delta_func)<eps)
       break;
-    s0=s;
   }
+    //Save final values of the field and concentrations
+  std::stringstream sss;
+  sss << runsname << "_electric_field_" << num_steps;
+  vtkSave(sss.str(),electric_field,ss.str(),grid);
+  cout << "...done." << endl;
+#endif
   
-  cout << s << endl;
+    //Test
   
-  ofstream ooo("comp.dat");
+  RVF electric_field_a(nx,ny,nz);
+  electric_field_a=RV(0,0,0);;
+  for (int i=0;i<grid.nx();++i)
+    for (int j=0;j<grid.ny();++j)
+      for (int k=0;k<grid.nz();++k)
+      {
+        Real x=grid.coordinates(i,j,k)[0];
+        if(x>xleft&&x<xright)
+        {
+          electric_field_a(i,j,k)=numberoffixedcharges/(lx*ly)*unit_vector(0);
+          //cout << electric_field_a(i,j,k) << endl;
+        }
+        else
+        {
+          electric_field_a(i,j,k)=RV(0,0,0);
+        }
+      }
+  std::stringstream ssss;
+  ssss << runsname << "_electric_field_analytic";
+  vtkSave(ssss.str(),electric_field_a,"electric_field_analytic",grid);
   
-  for(int i=0;i<nx;++i)
-  {
-    Real x=-.5*lx+grid.deltax()*i;
-    if(x>xleft&&x<xright)
-    {
-      c_a_av(i)=1./grid.deltax()*2.*s/(xright*pow(1.*ion_valence[0],2))*(tan(s*(x+.5*grid.deltax())/xright)-tan(s*(x-.5*grid.deltax())/xright));
-      c_a(i)=2.*pow(s/(ion_valence[0]*xright),2)/pow(cos(s*x/xright),2);
-    }
-    else
-    {
-      c_a(i)=0;
-      c_a_av(i)=0;
-    }
-    ooo << x << " " << c_a(i) << " " << c_a_av(i) << " " << c_eke(i) << " " << fabs(c_eke(i)-c_a_av(i))/c_a_av(i) << endl;
-  }
+  cout << electric_field(Range::all(),ny/2,nz/2)[0] << endl;
+  cout << endl;
+  cout << electric_field_a(Range::all(),ny/2,nz/2)[0] << endl;
   
+  ofstream efcut("efcut.dat");
   
+  for(int n=0;n<electric_field(Range::all(),ny/2,nz/2)[0].size();++n)
+    efcut << electric_field(Range::all(),ny/2,nz/2)[0](n) << " " 
+    << electric_field_a(Range::all(),ny/2,nz/2)[0](n) << endl;
   
-  cout << sum(c_eke-c_a) << endl;
-  
+  RVF electric_field_comp(electric_field_a.copy());
+  electric_field_comp-=electric_field;
+  cout << sum(dot(electric_field_comp,electric_field_comp))*grid.deltav() << endl;
   
   return 0;
 }

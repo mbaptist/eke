@@ -11,7 +11,7 @@ sources=['io.cpp','maggs.cpp','coord.cpp']
 env.Object(sources)
 objects=['io.o','maggs.o','coord.o']
 
-targets=['pb_colloid','pb_double_plane','p_spherical_capacitor']
+targets=['pb_colloid','pb_double_plane','p_spherical_capacitor','pb_double_plane_field']
 
 for target in targets:
   source=[target+'.cpp']
