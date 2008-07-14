@@ -3,10 +3,10 @@
 <KDevPrjSession>
  <DocsAndViews NumberOfDocuments="2" >
   <Doc0 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/pb_double_plane.cfg" >
-   <View0 Encoding="" line="39" Type="Source" />
+   <View0 Encoding="" Type="Source" />
   </Doc0>
-  <Doc1 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/pb_double_plane.cpp" >
-   <View0 Encoding="" line="183" Type="Source" />
+  <Doc1 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/pb_double_plane_field.cfg" >
+   <View0 Encoding="" line="5" Type="Source" />
   </Doc1>
  </DocsAndViews>
  <pluginList>
