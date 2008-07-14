@@ -139,9 +139,15 @@ public:
   
   const IV nearest_point_index(const RV & coord)
   {
+    
+    return IV( static_cast<int>(round((coord[0]+.5*lx_)/deltax_)),
+               static_cast<int>(round((coord[1]+.5*ly_)/deltay_)),
+               static_cast<int>(round((coord[2]+.5*lz_)/deltaz_)));
+#if 0    
     int ind_lip_x=static_cast<int>((coord[0]+.5*lx_)/deltax_);
     int ind_lip_y=static_cast<int>((coord[1]+.5*ly_)/deltay_);
     int ind_lip_z=static_cast<int>((coord[2]+.5*lz_)/deltaz_);
+    
     RV dist_vec=coord;
     dist_vec-=coordinates(ind_lip_x,ind_lip_y,ind_lip_z);
     Real distance0=norm(dist_vec);
@@ -164,6 +170,7 @@ public:
           }
         }
     return IV(ind_np_x,ind_np_y,ind_np_z);
+#endif
   };
   
 public:
