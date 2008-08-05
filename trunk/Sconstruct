@@ -5,16 +5,19 @@ pyver=sys.version[:3]
 incs=['/usr/include/python'+pyver]
 libs=['python'+pyver]
 
-env = Environment(CPPPATH=incs,CCFLAGS='-O2 -g -pg')
+flags=' -O3 -funroll-all-loops '
+#flags+=' -g -pg '
 
-sources=['io.cpp','maggs.cpp','coord.cpp']
+env = Environment(CPPPATH=incs,CXXFLAGS=flags)
+
+sources=['src/io.cpp','src/maggs.cpp','src/coord.cpp']
 env.Object(sources)
-objects=['io.o','maggs.o','coord.o']
+objects=['src/io.o','src/maggs.o','src/coord.o']
 
 targets=['pb_colloid','pb_double_plane','p_spherical_capacitor','pb_double_plane_field']
 
 for target in targets:
-  source=[target+'.cpp']
+  source=['src/'+target+'.cpp']
   source.append(objects)
   env.Program(target,source,LIBS=libs)
 

@@ -1,13 +1,40 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <!DOCTYPE KDevPrjSession>
 <KDevPrjSession>
- <DocsAndViews NumberOfDocuments="2" >
-  <Doc0 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/pb_double_plane.cfg" >
+ <DocsAndViews NumberOfDocuments="11" >
+  <Doc0 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/maggs.cpp" >
    <View0 Encoding="" Type="Source" />
   </Doc0>
-  <Doc1 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/pb_double_plane_field.cfg" >
-   <View0 Encoding="" line="5" Type="Source" />
+  <Doc1 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/Sconstruct" >
+   <View0 Encoding="" Type="Source" />
   </Doc1>
+  <Doc2 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/grid.hpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc2>
+  <Doc3 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/maggs.hpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc3>
+  <Doc4 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/coord.cpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc4>
+  <Doc5 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/coord.hpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc5>
+  <Doc6 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/pb_double_plane.cpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc6>
+  <Doc7 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/pb_colloid.cpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc7>
+  <Doc8 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/io.cpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc8>
+  <Doc9 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/pb_colloid.cfg" >
+   <View0 Encoding="" Type="Source" />
+  </Doc9>
+  <Doc10 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/pb_double_plane.cfg" >
+   <View0 Encoding="" line="0" Type="Source" />
+  </Doc10>
  </DocsAndViews>
  <pluginList>
   <kdevdebugger>
