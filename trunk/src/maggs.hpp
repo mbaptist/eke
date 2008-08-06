@@ -60,12 +60,12 @@ void initialise_electric_field(RVF & electric_field,
 
 
 //// FUNCTIONAL ////
-Real functional(const RVF & electric_field,const std::vector<RSF> ion_concentration);
+Real functional(const RVF & electric_field,const std::vector<RSF> ion_concentration,const Grid & grid);
 
 
 //// LOOP MOVES ////
 //Single loop move
-Real loop_move(RVF & electric_field,const Loop & loop);
+Real loop_move(RVF & electric_field,const Loop & loop,const Grid & grid);
 //Lattice sweep
 Real sequential_sweep_loop_moves(RVF & electric_field,const Grid & grid);
 

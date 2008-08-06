@@ -183,11 +183,8 @@ int main(int argc, char * argv[])
 	ofs << x << " " << c_a(i) << " " << c_eke(i) << " " << 0 << endl;
     }
   }
-  
-  
-  
-  //cout << sum(c_eke-c_a) << endl;
-  
+
+  cout << sum(electric_field[0](Range::all(),ny/2,nz/2)) << endl;
   
   return 0;
 }

@@ -135,54 +135,20 @@ int main(int argc, char * argv[])
   ss << runsname << "_fixed_charge_density";
   vtkSave(ss.str(),fixed_charge_density,"fixed_charge_density",grid);
   
-  //Distribute ionic species	
+ 	//Distribute ionic species
+  //There are no movable charges (ionic species)
+  //Passing an empty vector to the routines,
+//with the size zero defined in the config file
   std::vector<RSF> ion_density;
-  //distribute_ionic_species(ion_density,ion_number,runsname,grid);
-  ion_density.push_back(RSF(nx,ny,nz));
-  ion_density[0]=0;
+//  ion_density.push_back(RSF(nx,ny,nz));
+//  ion_density[0]=0;
   
   //electric field
   RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,fixed_charge_density,ion_density,ion_valence,eps,runsname,grid);
- 
-#if 1
-  //Minimise
-  //minimise(electric_field,ion_density,ion_valence,100,eps,grid);
-  //Minimise only for the electric field
-  cout << "Minimising... " << endl;
-  int num_steps=0;
-  Real func0=.5*sum(dot(electric_field,electric_field));
-  cout << " Initial value of the functional: " << func0 << endl;
-  Real func=func0;
-  while(1)
-  {
-    ++num_steps;
-    //Field moves
-    Real delta_func=sequential_sweep_loop_moves(electric_field,grid);
-      //Update the functional
-    func+=delta_func;
-      //Print iteration infos
-    cout << " Minimisation step: " << num_steps << "\t"
-      << "Variation in functional: " << delta_func << "\t"
-      << "Functional: " << func << endl;
-    // cout << sum(divergence(electric_field,grid)) << endl;
-  //Save field
-    if(num_steps%savingstep==0)
-    {
-      std::stringstream ss;
-      ss << runsname << "_electric_field_" << num_steps;
-      vtkSave(ss.str(),electric_field,ss.str(),grid);
-    }
-      //Check for stop criterium
-    if(fabs(delta_func)<eps)
-      break;
-  }
-    //Save final values of the field and concentrations
-  std::stringstream sss;
-  sss << runsname << "_electric_field_" << num_steps;
-  vtkSave(sss.str(),electric_field,ss.str(),grid);
-  cout << "...done." << endl;
-#endif
+
+   //Minimise
+minimise(electric_field,ion_density,ion_valence,savingstep,eps,runsname,grid);
   
     //Test
   

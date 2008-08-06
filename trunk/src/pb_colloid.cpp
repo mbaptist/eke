@@ -130,8 +130,8 @@ int main(int argc, char * argv[])
                 rsintheta*sin(phi),
                 z);
     IV ind_np=grid.nearest_point_index(coord_ps);	
-    colloid_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_density;
-    grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
+    colloid_charge_density(ind_np)+=delta_density;
+    grid.point_type()(ind_np)=2;
   } 
 #endif
 # if 0

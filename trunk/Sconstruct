@@ -5,7 +5,7 @@ pyver=sys.version[:3]
 incs=['/usr/include/python'+pyver]
 libs=['python'+pyver]
 
-flags=' -O3 -funroll-all-loops '
+flags='-O3 -funroll-all-loops'
 #flags+=' -g -pg '
 
 env = Environment(CPPPATH=incs,CXXFLAGS=flags)
@@ -14,7 +14,7 @@ sources=['src/io.cpp','src/maggs.cpp','src/coord.cpp']
 env.Object(sources)
 objects=['src/io.o','src/maggs.o','src/coord.o']
 
-targets=['pb_colloid','pb_double_plane','p_spherical_capacitor','pb_double_plane_field']
+targets=['pb_colloid','pb_double_plane','p_spherical_capacitor','p_plane_capacitor']
 
 for target in targets:
   source=['src/'+target+'.cpp']
