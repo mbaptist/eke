@@ -177,11 +177,12 @@ void initialise_electric_field(RVF & electric_field,
 
 //// FUNCTIONAL ////
 
-Real functional(const RVF & electric_field,const std::vector<RSF> ion_concentration)
+Real functional(const RVF & electric_field,const std::vector<RSF> ion_concentration,const Grid & grid)
 {
   Real func=.5*sum(dot(electric_field,electric_field));
   for (int n=0;n<ion_concentration.size();++n)
     func+=sum(where(ion_concentration[n]>0,ion_concentration[n]*log(ion_concentration[n]),0));
+  func*=grid.deltav();
   return func;
 }
 
@@ -191,7 +192,7 @@ Real functional(const RVF & electric_field,const std::vector<RSF> ion_concentrat
 //// LOOP MOVES ////
 
 //Single loop move
-Real loop_move(RVF & electric_field,const Loop & loop)
+Real loop_move(RVF & electric_field,const Loop & loop,const Grid & grid)
 {
   //References to the fields
   Real & e1 = electric_field(loop.node1())[loop.dir1()];
@@ -201,7 +202,7 @@ Real loop_move(RVF & electric_field,const Loop & loop)
   //Optimal change
   Real delta_field=-.25*(e1+e2-e3-e4);
   //Evaluate the change in the functional
-  Real delta_func=delta_field*(e1+e2-e3-e4+2.*delta_field);
+  Real delta_func=delta_field*(e1+e2-e3-e4+2.*delta_field)*grid.deltav();
   //Update the field
   e1+=delta_field;
   e2+=delta_field;
@@ -223,7 +224,7 @@ Real sequential_sweep_loop_moves(RVF & electric_field,const Grid & grid)
           //Create the loop
           Loop loop(IV(i,j,k),loop_number,grid);
           //Perform the loop move
-          delta_func+=loop_move(electric_field,loop);
+          delta_func+=loop_move(electric_field,loop,grid);
         }
   return delta_func;
 }
@@ -321,7 +322,7 @@ Real ion_move(RVF & electric_field,
   //Evaluate the change in the electric field
   Real deltae=-ion_valence*deltac*grid.deltal(dir);
   //Evaluate the change in the functional
-  Real delta_func=deltafunc(deltac,deltae,c1,c2,e);
+  Real delta_func=deltafunc(deltac,deltae,c1,c2,e)*grid.deltav();
   //cout << "delta_func: " << delta_func << endl;
   //Update the concentrations
   c1-=deltac;
@@ -389,7 +390,7 @@ void minimise(RVF & electric_field,
 {
   cout << "Minimising... " << endl;
   int num_steps=0;
-  Real func0=functional(electric_field,ion_density);
+  Real func0=functional(electric_field,ion_density,grid);
   cout << " Initial value of the functional: " << func0 << endl;
   Real func=func0;
   while(1)
@@ -408,8 +409,7 @@ void minimise(RVF & electric_field,
            << "Variation in functional: " << delta_func << "\t"
            << "Functional: " << func << endl;
   //Save fields
-#if 1
-    if(num_steps%savingstep==0)
+    if(savingstep>0&&num_steps%savingstep==0)
     {
       for (int n=0;n<ion_density.size();++n)
       {
@@ -421,7 +421,6 @@ void minimise(RVF & electric_field,
       ss << runsname << "_electric_field_" << num_steps;
       vtkSave(ss.str(),electric_field,ss.str(),grid);
     }
-#endif
       //Check for stop criterium
     if(fabs(delta_func)<eps)
       break;

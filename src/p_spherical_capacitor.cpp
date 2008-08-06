@@ -87,7 +87,6 @@ int main(int argc, char * argv[])
   //Close input file
   input.close();
   
-#if 0
   //Rescaling to non-dimensional units
   double k=sqrt(4.*M_PI*lb*fabs(colloid_valence)/(lx*ly*lz));
   colloid_valence*=4.*M_PI*lb*k;
@@ -98,8 +97,7 @@ int main(int argc, char * argv[])
   lz*=k;
   ris*=k;
   ros*=k;
-#endif  
-  
+
   //Grid
   Grid grid(nx,ny,nz,lx,ly,lz);
   
@@ -109,43 +107,41 @@ int main(int argc, char * argv[])
   //Fixed charges	
   RSF fixed_charge_density(nx,ny,nz);
   fixed_charge_density=0;
-  UniformClosedOpen<double> rgco;
-  UniformClosed<double> rgc;
+  UniformClosedOpen<Real> rgco;
+  UniformClosed<Real> rgc;
   //Inner sphere  
   //number of points to represent the sphere surface
   //100 per grid unit area
-  int np=10000*static_cast<int>(4*M_PI*pow(ris,2)/grid.deltasx());
+  int np=100*static_cast<int>(4*M_PI*pow(ris,2)/grid.deltasx());
   Real delta_density=(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {
-    Real costheta=-1.+rgc.random()*2.;
+    Real z=ris*(-1.+rgc.random()*2.);
     Real phi=rgco.random()*2.*M_PI;
-    Real sintheta=sqrt(1.-costheta*costheta);
-    RV coord_ps(sintheta*cos(phi),
-                sintheta*sin(phi),
-                costheta);
-    coord_ps*=ris;
+    Real rsintheta=sqrt(ris*ris-z*z);
+    RV coord_ps(rsintheta*cos(phi),
+                rsintheta*sin(phi),
+                z);
     IV ind_np=grid.nearest_point_index(coord_ps);	
-    fixed_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_density;
-    grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
+    fixed_charge_density(ind_np)+=delta_density;
+    grid.point_type()(ind_np)=2;
   } 
   //Outer sphere  
   //number of points to represent the sphere surface
   //10000 per grid unit area
-  np=10000*static_cast<int>(4*M_PI*pow(ros,2)/grid.deltasx());
+  np=100*static_cast<int>(4*M_PI*pow(ros,2)/grid.deltasx());
   delta_density=-(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {
-    Real costheta=-1.+rgc.random()*2.;
+    Real z=ros*(-1.+rgc.random()*2.);
     Real phi=rgco.random()*2.*M_PI;
-    Real sintheta=sqrt(1.-costheta*costheta);
-    RV coord_ps(sintheta*cos(phi),
-                sintheta*sin(phi),
-                costheta);
-    coord_ps*=ros;
+    Real rsintheta=sqrt(ros*ros-z*z);
+    RV coord_ps(rsintheta*cos(phi),
+                rsintheta*sin(phi),
+                z);
     IV ind_np=grid.nearest_point_index(coord_ps);	
-    fixed_charge_density(ind_np[0],ind_np[1],ind_np[2])+=delta_density;
-    grid.point_type()(ind_np[0],ind_np[1],ind_np[2])=2;
+    fixed_charge_density(ind_np)+=delta_density;
+    grid.point_type()(ind_np)=2;
   } 
 
   
@@ -156,58 +152,24 @@ int main(int argc, char * argv[])
   
   //Distribute ionic species	
   //There are no movable charges (ionic species)
-  //Setting ionic density to zero in order
-  //to be able to use the electric field
-  //initialisation function
+  //Passing an empty vector to the routines,
+//with the size zero defined in the config file
   std::vector<RSF> ion_density;
-  ion_density.push_back(RSF(nx,ny,nz));
-  ion_density[0]=0;
+//  ion_density.push_back(RSF(nx,ny,nz));
+//  ion_density[0]=0;
   
   //electric field
   RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,fixed_charge_density,ion_density,ion_valence,eps,runsname,grid);
   
-  
+//  RV avef(sum(electric_field[0]),sum(electric_field[1]),sum(electric_field[2]));
+//  avef*=grid.deltav()/(lx*ly*lz);
+//  electric_field-=avef;
+
   RVF electric_field_init(electric_field.copy());
-  
-#if 1
+
   //Minimise
-  //minimise(electric_field,ion_density,ion_valence,100,eps,grid);
-  //Minimise only for the electric field
-  cout << "Minimising... " << endl;
-  int num_steps=0;
-  Real func0=.5*sum(dot(electric_field,electric_field));
-  cout << " Initial value of the functional: " << func0 << endl;
-  Real func=func0;
-  while(1)
-  {
-    ++num_steps;
-    //Field moves
-    Real delta_func=sequential_sweep_loop_moves(electric_field,grid);
-      //Update the functional
-    func+=delta_func;
-      //Print iteration infos
-    cout << " Minimisation step: " << num_steps << "\t"
-      << "Variation in functional: " << delta_func << "\t"
-      << "Functional: " << func << endl;
-    // cout << sum(divergence(electric_field,grid)) << endl;
-  //Save field
-    if(num_steps%savingstep==0)
-    {
-      std::stringstream ss;
-      ss << runsname << "_electric_field_" << num_steps;
-      vtkSave(ss.str(),electric_field,ss.str(),grid);
-    }
-      //Check for stop criterium
-    if(fabs(delta_func)<eps)
-      break;
-  }
-    //Save final values of the field and concentrations
-  std::stringstream sss;
-  sss << runsname << "_electric_field_" << num_steps;
-  vtkSave(sss.str(),electric_field,ss.str(),grid);
-  cout << "...done." << endl;
-#endif
+minimise(electric_field,ion_density,ion_valence,savingstep,eps,runsname,grid);
   
   
   //Test
@@ -236,19 +198,27 @@ int main(int argc, char * argv[])
   ssss << runsname << "_electric_field_analytic";
   vtkSave(ssss.str(),electric_field_a,"electric_field_analytic",grid);
   
+
+//   RV avef(sum(electric_field[0]),sum(electric_field[1]),sum(electric_field[2]));
+//   avef*=grid.deltav()/(lx*ly*lz);
+//   electric_field-=avef;
+
+
   cout << electric_field(Range::all(),ny/2,nz/2)[0] << endl;
   cout << endl;
   cout << electric_field_a(Range::all(),ny/2,nz/2)[0] << endl;
   
+  
   ofstream efcut("efcut.dat");
   
-  for(int n=0;n<electric_field(Range::all(),ny/2,nz/2)[0].size();++n)
-    efcut << electric_field(Range::all(),ny/2,nz/2)[0](n) << " " 
-    << electric_field_a(Range::all(),ny/2,nz/2)[0](n) << endl;
+  for(int n=0;n<nx;++n)
+    efcut << grid.coordinates(n,ny/2,nz/2)[0] << " " 
+	<< electric_field(n,ny/2,nz/2)[0] << " " 
+  	<< electric_field_a(n,ny/2,nz/2)[0] << endl;
   
-  RVF electric_field_comp(electric_field_a.copy());
-  electric_field_comp-=electric_field;
-  cout << sum(dot(electric_field_comp,electric_field_comp))*grid.deltav() << endl;
+cout << sum(electric_field_init[0](Range::all(),ny/2,nz/2)) << endl;
+cout << sum(electric_field[0](Range::all(),ny/2,nz/2)) << endl;
+
   
   
   return 0;
