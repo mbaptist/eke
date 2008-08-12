@@ -111,8 +111,8 @@ int main(int argc, char * argv[])
   UniformClosed<Real> rgc;
   //Inner sphere  
   //number of points to represent the sphere surface
-  //100 per grid unit area
-  int np=100*static_cast<int>(4*M_PI*pow(ris,2)/grid.deltasx());
+  //1000 per grid unit area
+  int np=1000*static_cast<int>(4*M_PI*pow(ris,2)/grid.deltasx());
   Real delta_density=(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {
@@ -128,8 +128,8 @@ int main(int argc, char * argv[])
   } 
   //Outer sphere  
   //number of points to represent the sphere surface
-  //10000 per grid unit area
-  np=100*static_cast<int>(4*M_PI*pow(ros,2)/grid.deltasx());
+  //1000 per grid unit area
+  np=1000*static_cast<int>(4*M_PI*pow(ros,2)/grid.deltasx());
   delta_density=-(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {

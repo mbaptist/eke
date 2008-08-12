@@ -118,8 +118,8 @@ int main(int argc, char * argv[])
   UniformClosedOpen<Real> rgco;
   UniformClosed<Real> rgc;
   //number of points to represent the sphere surface
-  //100 per grid unit area
-  int np=100*static_cast<int>(4*M_PI*pow(rs,2)/grid.deltasx());
+  //1000 per grid unit area
+  int np=1000*static_cast<int>(4.*M_PI*pow(rs,2)/grid.deltasx());
   Real delta_density=(colloid_valence/grid.deltav())/np;
   for(int n=0;n<np;++n)
   {
@@ -170,9 +170,28 @@ colloid_charge_density/=np;
   //electric field
   RVF electric_field(nx,ny,nz);
   initialise_electric_field(electric_field,colloid_charge_density,ion_density,ion_valence,eps,runsname,grid);
-  
+
   //Minimise
   minimise(electric_field,ion_density,ion_valence,savingstep,eps,runsname,grid);
+
+ //Evaluate the total charge density (tcd)
+  RSF tcd(colloid_charge_density.copy());
+  for (int n=0;n<ion_density.size();++n)
+    tcd+=RSF(ion_valence[n]*ion_density[n]);
+
+#if 0
+  //Test for div E = \rho
+  cout << " Checking Gauss law..." << endl;
+  if(count(fabs(divergence(electric_field,grid)-tcd)>eps)>0)
+  {
+    cout << count(fabs(divergence(electric_field,grid)-tcd)>eps) << endl;
+    cout << sum(divergence(electric_field,grid)) << endl;
+    cout << sum(tcd) << endl;
+    cout << "  The electric field doesn't obey the Gauss law. \n"
+      << "  Aborting..." << endl;
+    exit(1);
+  }
+#endif 
 
   return 0;
 }

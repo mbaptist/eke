@@ -1,0 +1,12 @@
+This directory contains sample input files for the programs.
+
+For instance, if $EKE_TREE is the path to the eke directory,
+	cd $EKE_TREE
+	../pb_colloid '/people/thnfs/homes/baptista/actions/projects/eke/testing/pb_colloid.cfg
+runs the Maggs algorithm for a colloidal sphere placed at the centre of a cubic box.
+
+The other sample programs include the double plane, spherical capacitor and plane capacitor. The input files (.cfg) should be self explanatory.
+
+
+
+

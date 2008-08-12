@@ -169,13 +169,19 @@ int main(int argc, char * argv[])
   sss << runsname << "_analytic.dat";
   ofstream ofs(sss.str().c_str());
   
+  //Maximum relative error
+  Real mre;
+
   for(int i=0;i<nx;++i)
   {
     Real x=-.5*lx+grid.deltax()*i;
     if(x>xleft&&x<xright)
     {
       c_a(i)=2.*pow(s/(ion_valence[0]*xright),2)/pow(cos(s*x/xright),2);
-      ofs << x << " " << c_a(i) << " " << c_eke(i) << " " << fabs(c_eke(i)-c_a(i))/c_a(i) << endl;
+	Real re=fabs(c_eke(i)-c_a(i))/c_a(i);
+	if(re>mre)
+		mre=re;
+      ofs << x << " " << c_a(i) << " " << c_eke(i) << " " << re << endl;
     }
     else
     {
@@ -184,8 +190,8 @@ int main(int argc, char * argv[])
     }
   }
 
-  cout << sum(electric_field[0](Range::all(),ny/2,nz/2)) << endl;
-  
+cout << "Maximum relative error: " << mre << endl;  
+
   return 0;
 }
 
