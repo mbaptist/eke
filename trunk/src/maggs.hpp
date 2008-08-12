@@ -65,7 +65,7 @@ Real functional(const RVF & electric_field,const std::vector<RSF> ion_concentrat
 
 //// LOOP MOVES ////
 //Single loop move
-Real loop_move(RVF & electric_field,const Loop & loop,const Grid & grid);
+Real loop_move(RVF & electric_field,const Loop & loop);
 //Lattice sweep
 Real sequential_sweep_loop_moves(RVF & electric_field,const Grid & grid);
 
@@ -80,10 +80,10 @@ Real ion_move(RVF & electric_field,
               const Real & eps,
               const Grid & grid);
 //Variation of the functional for ion moves
-inline Real deltafunc(const Real & deltac,const Real & deltae,const Real & c1, const Real & c2, const Real & e);
+Real deltafunc(const Real & deltac,const Real & deltae,const Real & c1, const Real & c2, const Real & e);
 //Derivative with respect to the charge variation
 //of the variation of the functional for ion moves
-inline Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e, const Real & d_deltae_d_deltac);;
+Real d_deltafunc_d_deltac(const Real & deltac,const Real & c1, const Real & c2, const Real & e, const Real & d_deltae_d_deltac);
 //Lattice sweep
 Real sequential_sweep_ion_moves(RVF & electric_field,
                                 RSF & concentration,

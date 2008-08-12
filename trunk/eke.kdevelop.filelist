@@ -13,7 +13,5 @@ src/maggs.hpp
 src/p_spherical_capacitor.cpp
 src/pb_colloid.cpp
 src/pb_double_plane.cpp
-src/pb_double_plane_field.cpp
 src/random.hpp
 src/types.hpp
-test

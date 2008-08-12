@@ -136,9 +136,15 @@ public:
     node[1]%=ny_;
     node[2]%=nz_;
   };
-  
+	
+IV intobox(const IV & node) const
+{
+	return IV(node[0]%nx_,node[1]%ny_,node[2]%nz_);
+}
+
   const IV nearest_point_index(const RV & coord)
   { 
+#if 0
 	IV np(static_cast<int>(floor((coord[0]+.5*lx_)/deltax_)),
                static_cast<int>(floor((coord[1]+.5*ly_)/deltay_)),
                static_cast<int>(floor((coord[2]+.5*lz_)/deltaz_)));
@@ -147,10 +153,10 @@ public:
 		if(dist[n]>=.5*deltal(n))
 			np[n]+=1;
 	return np;
-
-  // return IV(static_cast<int>(ceil((coord[0]+.5*lx_)/deltax_))%nx_,
-  //             static_cast<int>(ceil((coord[1]+.5*ly_)/deltay_))%ny_,
-  //             static_cast<int>(ceil((coord[2]+.5*lz_)/deltaz_))%nz_);
+#endif
+   return IV(static_cast<int>(round((coord[0]+.5*lx_)/deltax_))%nx_,
+               static_cast<int>(round((coord[1]+.5*ly_)/deltay_))%ny_,
+              static_cast<int>(round((coord[2]+.5*lz_)/deltaz_))%nz_);
   };
   
 public:
@@ -214,12 +220,9 @@ public:
     dir1_((loop_number_+1)%3),
     dir2_((loop_number_+2)%3)
   {
-    node2_=node1_+unit_vector(dir1_);
-    node3_=node2_+unit_vector(dir2_);
-    node4_=node1_+unit_vector(dir2_);
-    _grid_.intobox(node2_);
-    _grid_.intobox(node3_);
-    _grid_.intobox(node4_);
+    node2_=_grid_.intobox(node1_+unit_vector(dir1_));
+    node3_=_grid_.intobox(node2_+unit_vector(dir2_));
+    node4_=_grid_.intobox(node1_+unit_vector(dir2_));
   };
   
   //Dtor
