@@ -1,7 +1,7 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <!DOCTYPE KDevPrjSession>
 <KDevPrjSession>
- <DocsAndViews NumberOfDocuments="7" >
+ <DocsAndViews NumberOfDocuments="9" >
   <Doc0 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/testing/pb_colloid.cfg" >
    <View0 Encoding="" Type="Source" />
   </Doc0>
@@ -21,8 +21,14 @@
    <View0 Encoding="" Type="Source" />
   </Doc5>
   <Doc6 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/pb_colloid.cpp" >
-   <View0 Encoding="" line="171" Type="Source" />
+   <View0 Encoding="" Type="Source" />
   </Doc6>
+  <Doc7 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/p_spherical_capacitor.cpp" >
+   <View0 Encoding="" Type="Source" />
+  </Doc7>
+  <Doc8 NumberOfViews="1" URL="file:///people/thnfs/homes/baptista/actions/projects/eke/src/pb_double_plane.cpp" >
+   <View0 Encoding="" line="192" Type="Source" />
+  </Doc8>
  </DocsAndViews>
  <pluginList>
   <kdevdebugger>
