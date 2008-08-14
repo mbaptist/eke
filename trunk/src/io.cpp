@@ -161,6 +161,7 @@ PyObject * PyInputParser::pval(const std::string & item)
 void vtkSave(const std::string & filename,const RSF & field,const std::string & fieldname,const Grid & grid)
 {
   ofstream ofs((filename+".vtk").c_str());
+  ofs << fixed << setprecision(16);
   ofs << "# vtk DataFile Version 2.0 \n"
     << ". \n"
     << "ASCII \n"
@@ -184,6 +185,7 @@ void vtkSave(const std::string & filename,const RSF & field,const std::string & 
 void vtkSave(const std::string & filename,const RVF & field,const std::string & fieldname,const Grid & grid)
 {
   ofstream ofs((filename+".vtk").c_str());
+  ofs << fixed << setprecision(16);
   ofs << "# vtk DataFile Version 2.0 \n"
     << ". \n"
     << "ASCII \n"
