@@ -362,7 +362,7 @@ inline Real ion_move(RVF & electric_field,
     exit(1);
   }
 #endif
-#if 1
+#if 0
   //Secant method
   Real deltac0=-c2;
   Real f0=d_deltafunc_d_deltac(deltac0,c1,c2,e,-ion_valence*grid.deltal(dir));
@@ -379,6 +379,22 @@ inline Real ion_move(RVF & electric_field,
     deltac1=deltac;
   } 
 #endif
+#if 1
+	//Newton's Method
+	Real deltac0=-c2;
+	Real a=2./(pow(ion_valence*grid.deltal(dir),2)*.5*(c1+c2));
+	Real b=e/(ion_valence*grid.deltal(dir)*(c1+c2))*(c1-c2)/(c1+c2);
+	while(1)
+	{
+		deltac=deltac0-(tanh(deltac0)+a*deltac0+b)/(1./pow(cosh(deltac0),2)+a);
+		if(fabs(deltac-deltac0)<eps*1e-2)
+      		break;	
+    //cout << deltac << endl;
+    deltac0=deltac;
+	}
+	
+#endif
+	
   //Evaluate the change in the electric field
   Real deltae=-ion_valence*deltac*grid.deltal(dir);
   //Evaluate the change in the functional
