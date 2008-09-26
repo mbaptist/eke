@@ -381,17 +381,23 @@ inline Real ion_move(RVF & electric_field,
 #endif
 #if 1
 	//Newton's Method
-	Real deltac0=-c2;
-	Real a=2./(pow(ion_valence*grid.deltal(dir),2)*.5*(c1+c2));
-	Real b=e/(ion_valence*grid.deltal(dir)*(c1+c2))*(c1-c2)/(c1+c2);
+	Real ivdl=ion_valence*grid.deltal(dir);
+	Real cp=.5*(c1+c2);
+	Real cm=.5*(c1-c2);	
+	Real a=2./(pow(ivdl,2)*cp);
+	Real b=e/(ivdl*cp)-cm/cp;
+	Real csi0=-.5*ivdl*(e-ivdl*cm);
+	Real csi;
 	while(1)
 	{
-		deltac=deltac0-(tanh(deltac0)+a*deltac0+b)/(1./pow(cosh(deltac0),2)+a);
-		if(fabs(deltac-deltac0)<eps*1e-2)
+		Real th=tanh(csi0);
+		csi=csi0-(th+a*csi0+b)/(1.-pow(th,2)+a);
+		if(fabs(csi-csi0)<2./pow(ivdl,2)*eps*1e-2)
       		break;	
     //cout << deltac << endl;
-    deltac0=deltac;
+    csi0=csi;
 	}
+	deltac=(e+2*csi/ivdl)/ivdl;
 	
 #endif
 	
