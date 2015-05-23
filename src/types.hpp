@@ -40,8 +40,10 @@ typedef double Real;
 
 
 //// BLITZ ////
-#define USE_BLITZ
+//#define USE_BLITZ
 //#define USE_CAT
+// This is defined by cmake
+
 
 #ifdef USE_BLITZ
 

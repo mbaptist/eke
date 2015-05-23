@@ -1,0 +1,50 @@
+EKE - Eelectrokinetic Equations
+Copyright (C) 2008 Manuel Baptista <mbaptist@gmail.com>
+
+Currently (May 2015) the project does not work with the most recent version of the blitz++ library
+Any version less or equal to 0.9 should be enough to compile and run the project. 
+
+For a local install under the eke directory, download and uncompress the tarball to some directory:
+./configure --prefix=${EKE_DIR_ABS_PATH}/install --enable-shared --enable-static --enable-64bits --with-pic -libdir=${EKE_DIR_ABS_PATH}/install/lib64
+make
+make install
+
+This will work with the build.py script, without any further options.
+
+
+Please install an appropriate version of blitz++ globally or to a local directory. For local install please pass the path of its prefix to the build script or to the cmake command, as described below. 
+
+COMPILATION AND INSTALLATION WITH build.py SCRIPT
+
+Get the sources
+
+./build.py 
+will build and install in separate subdirectories inside the source directory
+
+
+
+COMPILATION AND INSTALATION PROCEDURE WITH CMAKE
+
+Get the sources
+
+mkdir [PATH_TO_BUILD_DIR]
+
+cd [PATH_TO_BUILD_DIR]
+
+cmake -DCMAKE_INSTALL_PREFIX:PATH=[PATH_OF_INSTALL_PREFIX] -DBLITZ_PREFIX=[PATH_OF_BLITZ_PREFIX][PATH_OF_SOURCE]
+
+make
+
+make install
+
+
+
+###########
+# Running #
+###########
+
+In the test directory, there are four config files, one for each generated executable. To run use:
+ exec_path/executable cfg_path/configfile.cfg
+
+Vtk files will generated with the initial condition and the solution.
+

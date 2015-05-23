@@ -32,10 +32,6 @@
 // */
 //
 
-
-
-#include <Python.h>
-
 #include "io.hpp"
 
 #include <iostream>
